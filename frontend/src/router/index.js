@@ -28,6 +28,26 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: () => import('../views/ProfileView.vue')
+    },
+    {
+      path: '/wishlist',
+      name: 'wishlist',
+      component: () => import('../views/WishlistView.vue')
+    },
+    {
+      path: '/calendar',
+      name: 'calendar',
+      component: () => import('../views/CalendarView.vue')
+    },
+    {
+      path: '/savings',
+      name: 'savings',
+      component: () => import('../views/SavingsView.vue')
+    },
+    {
+      path: '/bills',
+      name: 'bills',
+      component: () => import('../views/BillsView.vue')
     }
   ]
 })
