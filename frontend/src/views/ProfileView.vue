@@ -1,12 +1,8 @@
 <script setup>
 import GlassCard from '../components/GlassCard.vue'
-import { useToast } from '../composables/useToast'
+import { useRouter } from 'vue-router'
 
-const { showToast } = useToast()
-
-const showComingSoon = (feature) => {
-  showToast(`${feature} 功能正在开发中，敬请期待！`, 'info')
-}
+const router = useRouter()
 </script>
 
 <template>
@@ -49,7 +45,7 @@ const showComingSoon = (feature) => {
     <div class="px-6 py-2 relative z-10">
       <GlassCard class="rounded-2xl shadow-sm overflow-hidden mb-6 animate-enter delay-100">
         <div class="divide-y divide-gray-100/50">
-            <div @click="showComingSoon('分类管理')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
+            <div @click="router.push('/categories')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center group-hover:scale-110 transition">
                         <i class="fa-solid fa-layer-group text-sm"></i>
@@ -58,7 +54,7 @@ const showComingSoon = (feature) => {
                 </div>
                 <i class="fa-solid fa-chevron-right text-gray-300 text-xs group-hover:text-gray-500 transition"></i>
             </div>
-            <div @click="showComingSoon('账单导出')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
+            <div @click="router.push('/export')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-green-50 text-green-500 flex items-center justify-center group-hover:scale-110 transition">
                         <i class="fa-solid fa-file-export text-sm"></i>
@@ -83,7 +79,7 @@ const showComingSoon = (feature) => {
 
       <GlassCard class="rounded-2xl shadow-sm overflow-hidden animate-enter delay-200">
         <div class="divide-y divide-gray-100/50">
-            <div @click="showComingSoon('通用设置')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
+            <div @click="router.push('/settings')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-gray-50 text-gray-500 flex items-center justify-center group-hover:scale-110 transition">
                         <i class="fa-solid fa-gear text-sm"></i>
@@ -92,7 +88,7 @@ const showComingSoon = (feature) => {
                 </div>
                 <i class="fa-solid fa-chevron-right text-gray-300 text-xs group-hover:text-gray-500 transition"></i>
             </div>
-            <div @click="showComingSoon('帮助与反馈')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
+            <div @click="router.push('/help')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-gray-50 text-gray-500 flex items-center justify-center group-hover:scale-110 transition">
                         <i class="fa-solid fa-circle-question text-sm"></i>

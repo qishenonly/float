@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帮助与反馈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .glass-card { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.8); }
+        .blob { position: absolute; filter: blur(60px); z-index: 0; opacity: 0.6; }
+        
+        /* FAQ 展开动画 */
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            opacity: 0;
+        }
+        .faq-active .faq-answer {
+            max-height: 200px; /* 足够显示内容的高度 */
+            opacity: 1;
+            margin-top: 0.5rem;
+        }
+        .faq-active .fa-chevron-right {
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body class="bg-[#F2F4F8] flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-[375px] h-[812px] bg-gradient-to-br from-[#f8fafc] via-[#e0f2fe] to-[#f3e8ff] shadow-2xl overflow-hidden relative sm:rounded-[40px] flex flex-col border-[8px] border-white">
+        
+        <div class="blob w-64 h-64 bg-blue-100 rounded-full -top-10 -left-10 mix-blend-multiply"></div>
+        <div class="blob w-64 h-64 bg-indigo-100 rounded-full bottom-20 -right-10 mix-blend-multiply"></div>
+
+        <div class="px-6 pt-12 pb-4 relative z-10 flex items-center justify-between">
+            <a href="profile.html" class="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center backdrop-blur-md text-gray-600 hover:bg-white transition"><i class="fa-solid fa-arrow-left"></i></a>
+            <h1 class="text-lg font-bold text-gray-800">帮助与反馈</h1>
+            <div class="w-10"></div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto hide-scrollbar px-6 relative z-10 pb-8">
+            
+            <div class="glass-card px-4 py-3 rounded-2xl flex items-center gap-3 mb-8 text-gray-500 shadow-sm focus-within:ring-2 ring-indigo-200 transition">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="bg-transparent w-full outline-none text-gray-700 placeholder-gray-400" placeholder="搜索常见问题...">
+            </div>
+
+            <h3 class="font-bold text-gray-800 mb-4 px-1">常见问题</h3>
+            <div class="space-y-3 mb-8">
+                
+                <div class="glass-card p-4 rounded-2xl cursor-pointer group" onclick="toggleFaq(this)">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center">
+                                <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+                            </div>
+                            <span class="text-sm font-bold text-gray-700">数据如何同步？</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-300 text-xs transition-transform duration-300"></i>
+                    </div>
+                    <div class="faq-answer text-xs text-gray-500 leading-relaxed px-1">
+                        极光记账开启了云端自动同步功能。只要您登录了账号，数据会在 WiFi 环境下自动上传至云端，确保数据永不丢失。
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 rounded-2xl cursor-pointer group" onclick="toggleFaq(this)">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-green-100 text-green-500 flex items-center justify-center">
+                                <i class="fa-solid fa-file-export text-xs"></i>
+                            </div>
+                            <span class="text-sm font-bold text-gray-700">支持导出 Excel 吗？</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-300 text-xs transition-transform duration-300"></i>
+                    </div>
+                    <div class="faq-answer text-xs text-gray-500 leading-relaxed px-1">
+                        支持。您可以在“我的”页面点击“账单导出”，选择您需要的时间范围，我们将生成 Excel 或 PDF 文件发送至您的邮箱。
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 rounded-2xl cursor-pointer group" onclick="toggleFaq(this)">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center">
+                                <i class="fa-solid fa-unlock-keyhole text-xs"></i>
+                            </div>
+                            <span class="text-sm font-bold text-gray-700">忘记手势密码怎么办？</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-300 text-xs transition-transform duration-300"></i>
+                    </div>
+                    <div class="faq-answer text-xs text-gray-500 leading-relaxed px-1">
+                        别担心，您可以卸载重装 App，然后通过手机号验证码重新登录，您的账单数据不会丢失。
+                    </div>
+                </div>
+
+            </div>
+
+            <h3 class="font-bold text-gray-800 mb-4 px-1">意见反馈</h3>
+            <div class="glass-card p-4 rounded-2xl mb-8">
+                <textarea class="w-full bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400 resize-none h-24 mb-2" placeholder="请详细描述您遇到的问题或建议，我们会认真倾听..."></textarea>
+                
+                <div class="flex justify-between items-center mt-2">
+                    <button class="w-16 h-16 rounded-xl border border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 hover:bg-white/50 transition">
+                        <i class="fa-solid fa-camera text-sm mb-1"></i>
+                        <span class="text-[10px]">截图</span>
+                    </button>
+                    <span class="text-xs text-gray-300">0/200</span>
+                </div>
+            </div>
+            
+            <button class="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-200 hover:shadow-xl hover:scale-[1.02] transition active:scale-[0.98]">
+                提交反馈
+            </button>
+            
+            <div class="mt-8 text-center">
+                <p class="text-[10px] text-gray-400 mb-2">或者通过以下方式联系我们</p>
+                <div class="flex justify-center gap-6 text-gray-300">
+                    <i class="fa-brands fa-weixin text-xl hover:text-green-500 transition cursor-pointer"></i>
+                    <i class="fa-brands fa-weibo text-xl hover:text-red-500 transition cursor-pointer"></i>
+                    <i class="fa-solid fa-envelope text-xl hover:text-blue-500 transition cursor-pointer"></i>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function toggleFaq(element) {
+            // 切换当前点击项的展开状态
+            element.classList.toggle('faq-active');
+            
+            // 可选：如果希望每次只展开一个，可以添加以下逻辑
+            /*
+            const allFaqs = document.querySelectorAll('.group');
+            allFaqs.forEach(faq => {
+                if (faq !== element) {
+                    faq.classList.remove('faq-active');
+                }
+            });
+            */
+        }
+    </script>
+</body>
+</html>

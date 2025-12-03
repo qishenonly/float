@@ -48,6 +48,26 @@ const router = createRouter({
       path: '/bills',
       name: 'bills',
       component: () => import('../views/BillsView.vue')
+    },
+    {
+      path: '/categories',
+      name: 'categories',
+      component: () => import('../views/CategoriesView.vue')
+    },
+    {
+      path: '/export',
+      name: 'export',
+      component: () => import('../views/ExportView.vue')
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: () => import('../views/SettingsView.vue')
+    },
+    {
+      path: '/help',
+      name: 'help',
+      component: () => import('../views/HelpView.vue')
     }
   ]
 })

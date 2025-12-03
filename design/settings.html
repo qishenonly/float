@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通用设置</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .glass-card { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.8); }
+        .blob { position: absolute; filter: blur(60px); z-index: 0; opacity: 0.6; }
+    </style>
+</head>
+<body class="bg-[#F2F4F8] flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-[375px] h-[812px] bg-gradient-to-br from-[#fdfbf7] via-[#f4f4f5] to-[#f3f4f6] shadow-2xl overflow-hidden relative sm:rounded-[40px] flex flex-col border-[8px] border-white">
+        
+        <div class="blob w-64 h-64 bg-gray-200 rounded-full -top-10 left-10 mix-blend-multiply"></div>
+        <div class="blob w-64 h-64 bg-gray-300 rounded-full bottom-20 -right-20 mix-blend-multiply"></div>
+
+        <div class="px-6 pt-12 pb-4 relative z-10 flex items-center justify-between">
+            <a href="profile.html" class="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center backdrop-blur-md text-gray-600 hover:bg-white transition"><i class="fa-solid fa-arrow-left"></i></a>
+            <h1 class="text-lg font-bold text-gray-800">通用设置</h1>
+            <div class="w-10"></div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto hide-scrollbar px-6 pt-2 relative z-10 pb-10">
+            
+            <p class="text-xs font-bold text-gray-400 mb-2 ml-2 uppercase tracking-wide">个性化</p>
+            <div class="glass-card rounded-2xl overflow-hidden mb-6">
+                <div class="flex items-center justify-between p-4 border-b border-gray-100/50 hover:bg-white/50 transition cursor-pointer">
+                    <span class="text-sm font-bold text-gray-700">深色模式</span>
+                    <div class="w-11 h-6 bg-gray-200 rounded-full relative transition-colors duration-200 ease-in-out cursor-pointer">
+                        <div class="w-5 h-5 bg-white rounded-full shadow absolute top-0.5 left-0.5 transition-transform duration-200 ease-in-out"></div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between p-4 border-b border-gray-100/50 hover:bg-white/50 transition cursor-pointer">
+                    <span class="text-sm font-bold text-gray-700">主题皮肤</span>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 rounded-full bg-gradient-to-tr from-blue-400 to-purple-400 border border-white shadow-sm"></div>
+                        <span class="text-xs text-gray-400">极光紫</span>
+                        <i class="fa-solid fa-chevron-right text-gray-300 text-xs ml-1"></i>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between p-4 hover:bg-white/50 transition cursor-pointer">
+                    <span class="text-sm font-bold text-gray-700">货币单位</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-400">CNY (¥)</span>
+                        <i class="fa-solid fa-chevron-right text-gray-300 text-xs ml-1"></i>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-xs font-bold text-gray-400 mb-2 ml-2 uppercase tracking-wide">安全与数据</p>
+            <div class="glass-card rounded-2xl overflow-hidden mb-6">
+                <div class="flex items-center justify-between p-4 border-b border-gray-100/50 hover:bg-white/50 transition cursor-pointer">
+                    <span class="text-sm font-bold text-gray-700">手势密码锁定</span>
+                    <div class="w-11 h-6 bg-indigo-500 rounded-full relative transition-colors duration-200 ease-in-out cursor-pointer">
+                        <div class="w-5 h-5 bg-white rounded-full shadow absolute top-0.5 right-0.5 transition-transform duration-200 ease-in-out"></div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between p-4 border-b border-gray-100/50 hover:bg-white/50 transition cursor-pointer">
+                    <span class="text-sm font-bold text-gray-700">云端同步</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-green-500 font-medium">已同步</span>
+                        <i class="fa-solid fa-rotate text-gray-300 text-xs ml-1"></i>
+                    </div>
+                </div>
+                 <div class="flex items-center justify-between p-4 hover:bg-white/50 transition cursor-pointer">
+                    <span class="text-sm font-bold text-gray-700">清除缓存</span>
+                    <span class="text-xs text-gray-400">24.5 MB</span>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl overflow-hidden mb-8">
+                <div class="flex items-center justify-between p-4 border-b border-gray-100/50 hover:bg-white/50 transition cursor-pointer">
+                    <span class="text-sm font-bold text-gray-700">关于极光记账</span>
+                    <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+                </div>
+                <div class="flex items-center justify-between p-4 hover:bg-white/50 transition cursor-pointer">
+                    <span class="text-sm font-bold text-gray-700">给个好评</span>
+                    <i class="fa-solid fa-heart text-pink-400 text-xs"></i>
+                </div>
+            </div>
+
+            <button class="w-full text-center text-red-500 text-sm font-bold py-3 hover:bg-red-50 rounded-xl transition">
+                退出登录
+            </button>
+
+        </div>
+    </div>
+</body>
+</html>
