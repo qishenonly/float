@@ -1,5 +1,12 @@
 <script setup>
 import GlassCard from '../components/GlassCard.vue'
+import { useToast } from '../composables/useToast'
+
+const { showToast } = useToast()
+
+const showComingSoon = (feature) => {
+  showToast(`${feature} 功能正在开发中，敬请期待！`, 'info')
+}
 </script>
 
 <template>
@@ -72,25 +79,25 @@ import GlassCard from '../components/GlassCard.vue'
 
     <!-- Quick Actions -->
     <div class="px-6 mt-6 grid grid-cols-4 gap-4 animate-enter delay-200">
-      <div class="flex flex-col items-center gap-2 cursor-pointer group active-press">
+      <div @click="showComingSoon('心愿单')" class="flex flex-col items-center gap-2 cursor-pointer group active-press">
         <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl text-pink-500 group-hover:shadow-md group-hover:-translate-y-1 transition duration-300">
           <i class="fa-solid fa-gift"></i>
         </div>
         <span class="text-[10px] font-medium text-gray-500">心愿单</span>
       </div>
-      <div class="flex flex-col items-center gap-2 cursor-pointer group active-press">
+      <div @click="showComingSoon('日历')" class="flex flex-col items-center gap-2 cursor-pointer group active-press">
         <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl text-blue-500 group-hover:shadow-md group-hover:-translate-y-1 transition duration-300">
           <i class="fa-solid fa-calendar-days"></i>
         </div>
         <span class="text-[10px] font-medium text-gray-500">日历</span>
       </div>
-      <div class="flex flex-col items-center gap-2 cursor-pointer group active-press">
+      <div @click="showComingSoon('存钱')" class="flex flex-col items-center gap-2 cursor-pointer group active-press">
         <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl text-orange-500 group-hover:shadow-md group-hover:-translate-y-1 transition duration-300">
           <i class="fa-solid fa-piggy-bank"></i>
         </div>
         <span class="text-[10px] font-medium text-gray-500">存钱</span>
       </div>
-      <div class="flex flex-col items-center gap-2 cursor-pointer group active-press">
+      <div @click="showComingSoon('账单')" class="flex flex-col items-center gap-2 cursor-pointer group active-press">
         <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl text-indigo-500 group-hover:shadow-md group-hover:-translate-y-1 transition duration-300">
           <i class="fa-solid fa-file-invoice"></i>
         </div>

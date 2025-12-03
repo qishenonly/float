@@ -1,8 +1,11 @@
 <script setup>
 import { RouterView, useRoute } from 'vue-router'
 import BottomNav from './components/BottomNav.vue'
+import Toast from './components/Toast.vue'
+import { useToast } from './composables/useToast'
 
 const route = useRoute()
+const { toastState, hideToast } = useToast()
 </script>
 
 <template>
@@ -20,6 +23,14 @@ const route = useRoute()
 
       <!-- Bottom Navigation -->
       <BottomNav v-if="route.name !== 'add'" />
+      
+      <!-- Toast Notification -->
+      <Toast 
+        :show="toastState.show" 
+        :message="toastState.message" 
+        :type="toastState.type"
+        @close="hideToast"
+      />
     </div>
   </div>
 </template>
