@@ -1,0 +1,137 @@
+# ===================================================================
+#  macOS 系统文件
+# ===================================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+# 可能的系统缓存文件
+._*
+
+# ===================================================================
+#  IDE 与编辑器配置 (WebStorm, VSCode, Vim等)
+# ===================================================================
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===================================================================
+#  日志与临时文件
+# ===================================================================
+*.log
+*.tmp
+*.temp
+*.bak
+*.pid
+*.seed
+*.pid.lock
+
+# ===================================================================
+#  前端相关 (Node.js, React, Vue, Vite, Webpack等)
+# ===================================================================
+# 依赖目录
+node_modules/
+# 构建输出
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+# 本地开发环境
+*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# 包管理器锁文件（可选，根据团队规范）
+# pnpm-lock.yaml
+# yarn.lock
+# package-lock.json
+
+# ===================================================================
+#  后端相关 (Python, Node.js, Java, Go等通用规则)
+# ===================================================================
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+# Java/Gradle/Maven
+*.class
+*.jar
+*.war
+*.ear
+target/
+build/
+.gradle/
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+# 通用后端
+*.pid
+*.seed
+*.pid.lock
+logs/
+*.log
+.DS_Store
+
+# ===================================================================
+#  环境变量与敏感配置
+# ===================================================================
+.env
+*.env
+!*.env.example
+*.key
+*.pem
+*.crt
+secrets.yaml
+config/secrets.yaml
+!config/example_secrets.yaml
+
+# ===================================================================
+#  前端/后端自定义构建目录 (可根据项目调整)
+# ===================================================================
+/frontend/dist/
+/frontend/build/
+/frontend/node_modules/
+/backend/dist/
+/backend/build/
+/backend/target/
+/backend/venv/
+/backend/__pycache__/
+
+# ===================================================================
+#  其他常见文件
+# ===================================================================
+*.tgz
+*.tar.gz
+*.zip
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.directory
+.history/
