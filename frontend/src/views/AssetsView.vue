@@ -12,7 +12,7 @@ import GlassCard from '../components/GlassCard.vue'
 
     <div class="px-6">
       <!-- Net Worth Card -->
-      <div class="relative overflow-hidden rounded-[2rem] p-6 text-white shadow-xl shadow-indigo-200/50 mb-8 animate-enter delay-100 group">
+      <div class="relative overflow-hidden rounded-[2rem] p-6 text-white shadow-xl shadow-indigo-200/50 mb-8 animate-enter delay-100 group active-press">
         <div class="absolute inset-0 bg-gradient-to-br from-[#4e54c8] to-[#8f94fb] z-0"></div>
         <div class="absolute right-0 top-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2"></div>
         
@@ -47,7 +47,7 @@ import GlassCard from '../components/GlassCard.vue'
       <div class="mb-6 animate-enter delay-200">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-sm font-bold text-gray-800">资金账户</h3>
-          <button class="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-500 hover:text-indigo-600 transition">
+          <button class="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-500 hover:text-indigo-600 transition active-press">
             <i class="fa-solid fa-plus text-xs"></i>
           </button>
         </div>

@@ -14,14 +14,14 @@ import GlassCard from '../components/GlassCard.vue'
         <h1 class="text-2xl font-extrabold text-gray-800 tracking-tight">Hi, Alex 👋</h1>
         <p class="text-xs text-gray-400 mt-1">今天也是充满希望的一天 ✨</p>
       </div>
-      <RouterLink to="/profile" class="w-11 h-11 rounded-full p-1 bg-white shadow-sm cursor-pointer hover:scale-105 transition">
+      <RouterLink to="/profile" class="w-11 h-11 rounded-full p-1 bg-white shadow-sm cursor-pointer hover:scale-105 transition active-press">
         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex&backgroundColor=ffdfbf" class="w-full h-full rounded-full" alt="avatar">
       </RouterLink>
     </div>
 
     <!-- Balance Card -->
     <div class="px-6 mt-6 animate-enter delay-100">
-      <div class="relative overflow-hidden rounded-[2rem] p-6 text-white shadow-xl shadow-indigo-200/50 group transition-transform hover:scale-[1.02] duration-300">
+      <div class="relative overflow-hidden rounded-[2rem] p-6 text-white shadow-xl shadow-indigo-200/50 group transition-transform hover:scale-[1.02] duration-300 active-press">
         <div class="absolute inset-0 bg-gradient-to-tr from-violet-600 to-indigo-500 z-0"></div>
         <div class="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
         <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-purple-400 opacity-20 rounded-full blur-xl"></div>
@@ -32,7 +32,7 @@ import GlassCard from '../components/GlassCard.vue'
               <p class="text-indigo-100 text-xs font-medium mb-1 tracking-wide opacity-80">本月结余</p>
               <div class="flex items-baseline gap-2">
                 <h2 class="text-3xl font-bold tracking-tight">¥ 4,250.<span class="text-lg opacity-70">00</span></h2>
-                <button class="text-indigo-200 hover:text-white transition"><i class="fa-solid fa-eye-slash text-sm"></i></button>
+                <button class="text-indigo-200 hover:text-white transition active-press"><i class="fa-solid fa-eye-slash text-sm"></i></button>
               </div>
             </div>
             <div class="bg-white/20 backdrop-blur-md p-2 rounded-xl">
@@ -72,25 +72,25 @@ import GlassCard from '../components/GlassCard.vue'
 
     <!-- Quick Actions -->
     <div class="px-6 mt-6 grid grid-cols-4 gap-4 animate-enter delay-200">
-      <div class="flex flex-col items-center gap-2 cursor-pointer group">
+      <div class="flex flex-col items-center gap-2 cursor-pointer group active-press">
         <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl text-pink-500 group-hover:shadow-md group-hover:-translate-y-1 transition duration-300">
           <i class="fa-solid fa-gift"></i>
         </div>
         <span class="text-[10px] font-medium text-gray-500">心愿单</span>
       </div>
-      <div class="flex flex-col items-center gap-2 cursor-pointer group">
+      <div class="flex flex-col items-center gap-2 cursor-pointer group active-press">
         <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl text-blue-500 group-hover:shadow-md group-hover:-translate-y-1 transition duration-300">
           <i class="fa-solid fa-calendar-days"></i>
         </div>
         <span class="text-[10px] font-medium text-gray-500">日历</span>
       </div>
-      <div class="flex flex-col items-center gap-2 cursor-pointer group">
+      <div class="flex flex-col items-center gap-2 cursor-pointer group active-press">
         <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl text-orange-500 group-hover:shadow-md group-hover:-translate-y-1 transition duration-300">
           <i class="fa-solid fa-piggy-bank"></i>
         </div>
         <span class="text-[10px] font-medium text-gray-500">存钱</span>
       </div>
-      <div class="flex flex-col items-center gap-2 cursor-pointer group">
+      <div class="flex flex-col items-center gap-2 cursor-pointer group active-press">
         <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl text-indigo-500 group-hover:shadow-md group-hover:-translate-y-1 transition duration-300">
           <i class="fa-solid fa-file-invoice"></i>
         </div>
@@ -102,7 +102,7 @@ import GlassCard from '../components/GlassCard.vue'
     <div class="px-6 mt-8 animate-enter delay-300">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-bold text-gray-800">今日动态</h3>
-        <button class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-400 shadow-sm hover:text-gray-800">
+        <button class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-400 shadow-sm hover:text-gray-800 active-press">
           <i class="fa-solid fa-ellipsis"></i>
         </button>
       </div>
