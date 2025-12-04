@@ -80,8 +80,8 @@ const handleLogout = () => {
 
       <!-- About Section -->
       <div class="glass-card rounded-2xl overflow-hidden mb-8 animate-enter delay-500">
-        <div @click="showFeature('关于极光记账')" class="flex items-center justify-between p-4 border-b border-gray-100/50 hover:bg-white/50 transition cursor-pointer active-press">
-          <span class="text-sm font-bold text-gray-700">关于极光记账</span>
+        <div @click="showFeature('关于浮岛')" class="flex items-center justify-between p-4 border-b border-gray-100/50 hover:bg-white/50 transition cursor-pointer active-press">
+          <span class="text-sm font-bold text-gray-700">关于浮岛</span>
           <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
         </div>
         <div @click="showFeature('给个好评')" class="flex items-center justify-between p-4 hover:bg-white/50 transition cursor-pointer active-press">

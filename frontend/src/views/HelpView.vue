@@ -17,7 +17,7 @@ const faqs = [
     icon: 'fa-cloud-arrow-up',
     color: 'blue',
     question: '数据如何同步？',
-    answer: '极光记账开启了云端自动同步功能。只要您登录了账号，数据会在 WiFi 环境下自动上传至云端，确保数据永不丢失。'
+    answer: '浮岛开启了云端自动同步功能。只要您登录了账号，数据会在 WiFi 环境下自动上传至云端，确保数据永不丢失。'
   },
   {
     id: 2,
