@@ -566,6 +566,64 @@ CREATE TABLE system_categories (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统默认分类表';
 ```
 
+#### 3.11.2 app_updates (软件更新表)
+
+存储应用版本更新历史和下载链接。
+
+```sql
+CREATE TABLE app_updates (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    version_code INT NOT NULL COMMENT '版本代码 (数字递增)',
+    version_name VARCHAR(20) NOT NULL COMMENT '版本名称 (如 1.0.0)',
+    
+    platform ENUM('android', 'ios', 'web', 'all') NOT NULL COMMENT '平台类型',
+    
+    update_type ENUM('major', 'minor', 'patch', 'hotfix') NOT NULL COMMENT '更新类型',
+    is_force_update BOOLEAN DEFAULT FALSE COMMENT '是否强制更新',
+    min_supported_version VARCHAR(20) COMMENT '最低支持版本',
+    
+    title VARCHAR(200) NOT NULL COMMENT '更新标题',
+    description TEXT NOT NULL COMMENT '更新内容描述',
+    changelog JSON COMMENT '变更日志 (结构化数据)',
+    
+    download_url VARCHAR(500) COMMENT '下载链接',
+    file_size BIGINT COMMENT '文件大小(字节)',
+    file_hash VARCHAR(64) COMMENT '文件哈希值 (SHA256)',
+    
+    release_notes_url VARCHAR(500) COMMENT '详细发布说明URL',
+    
+    status ENUM('draft', 'beta', 'released', 'deprecated') DEFAULT 'released' COMMENT '发布状态',
+    
+    release_date TIMESTAMP COMMENT '发布时间',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_version (version_code),
+    INDEX idx_platform_status (platform, status),
+    INDEX idx_release_date (release_date),
+    UNIQUE KEY unique_version_platform (version_code, platform)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='软件更新表';
+```
+
+**changelog JSON 字段示例结构:**
+
+```json
+{
+  "new_features": [
+    "支持指纹解锁",
+    "新增数据同步功能"
+  ],
+  "improvements": [
+    "优化加载速度",
+    "改进UI交互体验"
+  ],
+  "bug_fixes": [
+    "修复账单提醒不准确的问题",
+    "修复部分机型闪退问题"
+  ]
+}
+```
+
 ---
 
 ## 4. 数据库索引策略
@@ -735,6 +793,8 @@ erDiagram
     wishlists ||--o{ wishlist_deposits : accumulates
     
     budgets }o--|| categories : "controls (optional)"
+    
+    users ||--o{ app_updates : "checks for updates"
 ```
 
 ---
@@ -748,6 +808,7 @@ erDiagram
 3. **recurring_templates** (循环模板表) - 定期交易模板
 4. **shared_accounts** (共享账本表) - 支持家庭/情侣共享记账
 5. **achievements** (成就徽章表) - 游戏化激励系统
+6. **user_feedback** (用户反馈表) - 收集用户反馈和建议
 
 ### 10.2 数据分析表
 
@@ -769,6 +830,7 @@ erDiagram
 ✅ **心愿单** - 购物目标管理  
 ✅ **预算控制** - 智能预算提醒  
 ✅ **数据导出** - 完整的数据导出功能  
+✅ **软件更新** - 版本更新管理和分发  
 
 ### 设计亮点
 
@@ -780,6 +842,6 @@ erDiagram
 
 ---
 
-**文档版本**: v1.0  
+**文档版本**: v1.1  
 **创建日期**: 2025-12-04  
-**最后更新**: 2025-12-04
+**最后更新**: 2025-12-05
