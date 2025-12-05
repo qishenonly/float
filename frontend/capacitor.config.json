@@ -1,5 +1,13 @@
 {
   "appId": "com.floatisland.app",
-  "appName": "FloatIsland",
-  "webDir": "dist"
+  "appName": "Float Island",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true,
+    "allowNavigation": ["10.0.2.2", "192.168.0.59"]
+  },
+  "android": {
+    "allowMixedContent": true
+  }
 }

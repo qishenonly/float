@@ -1,8 +1,43 @@
 <script setup>
-import GlassCard from '../components/GlassCard.vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import GlassCard from '../components/GlassCard.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
+
+const user = computed(() => authStore.currentUser)
+const loading = ref(false)
+
+onMounted(async () => {
+  // 如果需要，从后端刷新最新用户信息
+  if (authStore.isAuthenticated) {
+    try {
+      await authStore.fetchCurrentUser()
+    } catch (error) {
+      console.error('Failed to fetch user:', error)
+    }
+  }
+})
+
+const handleLogout = async () => {
+  if (confirm('确定要退出登录吗？')) {
+    loading.value = true
+    try {
+      await authStore.logout()
+      router.push('/login')
+    } catch (error) {
+      alert('退出登录失败')
+    } finally {
+      loading.value = false
+    }
+  }
+}
+
+const showComingSoon = (feature) => {
+  alert(`${feature}功能开发中，敬请期待！`)
+}
 </script>
 
 <template>
@@ -11,32 +46,32 @@ const router = useRouter()
     <div class="px-6 pt-16 pb-8 relative z-10 animate-enter">
       <div class="flex items-center gap-5 mb-8">
         <div class="w-20 h-20 rounded-full p-1 bg-white shadow-lg relative group cursor-pointer">
-             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex&backgroundColor=ffdfbf" class="w-full h-full rounded-full group-hover:scale-105 transition duration-300" alt="avatar">
-             <div class="absolute bottom-0 right-0 w-6 h-6 bg-green-400 rounded-full border-2 border-white flex items-center justify-center text-white text-[10px]">
+             <img :src="user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'User'}&backgroundColor=ffdfbf`" class="w-full h-full rounded-full group-hover:scale-105 transition duration-300" alt="avatar">
+             <div v-if="user?.verified" class="absolute bottom-0 right-0 w-6 h-6 bg-green-400 rounded-full border-2 border-white flex items-center justify-center text-white text-[10px]">
                 <i class="fa-solid fa-check"></i>
              </div>
         </div>
         <div>
-            <h1 class="text-2xl font-extrabold text-gray-800">Alex</h1>
+            <h1 class="text-2xl font-extrabold text-gray-800">{{ user?.display_name || user?.username || '用户' }}</h1>
             <div class="flex items-center gap-2 mt-1">
-                <span class="bg-indigo-100 text-indigo-600 text-[10px] px-2 py-0.5 rounded-full font-bold">已实名</span>
-                <p class="text-xs text-gray-400">坚持记账 234 天</p>
+                <span v-if="user?.verified" class="bg-indigo-100 text-indigo-600 text-[10px] px-2 py-0.5 rounded-full font-bold">已实名</span>
+                <p class="text-xs text-gray-400">坚持记账 {{ user?.continuous_days || 0 }} 天</p>
             </div>
         </div>
       </div>
 
       <GlassCard class="p-4 flex justify-between shadow-sm">
         <div @click="showComingSoon('本月账单详情')" class="text-center flex-1 border-r border-gray-200/50 cursor-pointer hover:bg-white/30 rounded-lg transition active-press">
-            <p class="text-lg font-extrabold text-gray-800">12</p>
+            <p class="text-lg font-extrabold text-gray-800">{{ user?.total_records || 0 }}</p>
             <p class="text-[10px] text-gray-400 uppercase tracking-wide">本月笔数</p>
         </div>
         <div @click="showComingSoon('徽章系统')" class="text-center flex-1 border-r border-gray-200/50 cursor-pointer hover:bg-white/30 rounded-lg transition active-press">
-            <p class="text-lg font-extrabold text-gray-800">4</p>
+            <p class="text-lg font-extrabold text-gray-800">{{ user?.total_badges || 0 }}</p>
             <p class="text-[10px] text-gray-400 uppercase tracking-wide">打卡徽章</p>
         </div>
         <div @click="showComingSoon('VIP 会员')" class="text-center flex-1 cursor-pointer hover:bg-white/30 rounded-lg transition active-press">
-            <p class="text-lg font-extrabold text-indigo-600">VIP</p>
-            <p class="text-[10px] text-gray-400 uppercase tracking-wide">高级版</p>
+            <p class="text-lg font-extrabold text-indigo-600">{{ user?.membership_level || 'FREE' }}</p>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wide">{{ user?.membership_level === 'VIP' ? '高级版' : '免费版' }}</p>
         </div>
       </GlassCard>
     </div>
@@ -77,7 +112,7 @@ const router = useRouter()
         </div>
       </GlassCard>
 
-      <GlassCard class="rounded-2xl shadow-sm overflow-hidden animate-enter delay-200">
+      <GlassCard class="rounded-2xl shadow-sm overflow-hidden mb-6 animate-enter delay-200">
         <div class="divide-y divide-gray-100/50">
             <div @click="router.push('/settings')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
                 <div class="flex items-center gap-3">
@@ -99,8 +134,42 @@ const router = useRouter()
             </div>
         </div>
       </GlassCard>
+
+      <!-- Logout Button -->
+      <button
+        @click="handleLogout"
+        :disabled="loading"
+        class="w-full bg-white/80 backdrop-blur-md text-red-500 font-bold py-4 rounded-2xl shadow-sm hover:shadow-md transition duration-200 mb-4 animate-enter delay-300 disabled:opacity-50"
+      >
+        <span v-if="!loading">退出登录</span>
+        <span v-else class="flex items-center justify-center gap-2">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          退出中...
+        </span>
+      </button>
       
-      <p class="text-center text-[10px] text-gray-300 mt-6 mb-4 animate-enter delay-300">Version 1.0.2</p>
+      <p class="text-center text-[10px] text-gray-300 mt-2 mb-4 animate-enter delay-300">Version 1.0.2</p>
     </div>
   </div>
 </template>
+
+<style scoped>
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-enter {
+  animation: fadeInUp 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+
+.active-press:active {
+  transform: scale(0.98);
+  transition: transform 0.1s;
+}
+</style>

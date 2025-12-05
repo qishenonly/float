@@ -38,6 +38,7 @@ func SetupRouter() *gin.Engine {
 			{
 				users.GET("/me", handlers.GetCurrentUser)
 				users.PUT("/me", handlers.UpdateCurrentUser)
+				users.PUT("/me/password", handlers.UpdatePassword)
 				users.GET("/me/stats", handlers.GetUserStats)
 			}
 

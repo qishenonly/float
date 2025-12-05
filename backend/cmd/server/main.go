@@ -57,7 +57,7 @@ func main() {
 
 	// 创建 HTTP 服务器
 	srv := &http.Server{
-		Addr:           fmt.Sprintf(":%d", viper.GetInt("server.port")),
+		Addr:           fmt.Sprintf("%s:%s", viper.GetString("server.host"), viper.GetString("server.port")),
 		Handler:        router,
 		ReadTimeout:    time.Duration(viper.GetInt("server.read_timeout")) * time.Second,
 		WriteTimeout:   time.Duration(viper.GetInt("server.write_timeout")) * time.Second,
@@ -66,7 +66,7 @@ func main() {
 
 	// 启动服务器（goroutine）
 	go func() {
-		logger.Info("Server starting on :%d", viper.GetInt("server.port"))
+		logger.Infof("Server starting on %s:%s", viper.GetString("server.host"), viper.GetString("server.port"))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Fatal("Failed to start server:", err)
 		}

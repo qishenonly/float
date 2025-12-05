@@ -1,8 +1,15 @@
 <script setup>
-import GlassCard from '../components/GlassCard.vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import GlassCard from '../components/GlassCard.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
+
+const user = computed(() => authStore.currentUser)
+const displayName = computed(() => user.value?.display_name || user.value?.username || 'User')
+const avatarSeed = computed(() => user.value?.username || 'User')
 </script>
 
 <template>
@@ -14,11 +21,11 @@ const router = useRouter()
           <span class="text-xs font-medium tracking-wider uppercase">Tuesday, Dec 03</span>
           <i class="fa-solid fa-cloud-sun text-yellow-400"></i>
         </div>
-        <h1 class="text-2xl font-extrabold text-gray-800 tracking-tight">Hi, Alex 👋</h1>
+        <h1 class="text-2xl font-extrabold text-gray-800 tracking-tight">Hi, {{ displayName }} 👋</h1>
         <p class="text-xs text-gray-400 mt-1">今天也是充满希望的一天 ✨</p>
       </div>
       <RouterLink to="/profile" class="w-11 h-11 rounded-full p-1 bg-white shadow-sm cursor-pointer hover:scale-105 transition active-press">
-        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex&backgroundColor=ffdfbf" class="w-full h-full rounded-full" alt="avatar">
+        <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}&backgroundColor=ffdfbf`" class="w-full h-full rounded-full" alt="avatar">
       </RouterLink>
     </div>
 
