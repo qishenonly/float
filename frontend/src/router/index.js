@@ -48,6 +48,18 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/profile/edit',
+      name: 'profile-edit',
+      component: () => import('../views/ProfileEditView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/profile/change-password',
+      name: 'change-password',
+      component: () => import('../views/ChangePasswordView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/wishlist',
       name: 'wishlist',
       component: () => import('../views/WishlistView.vue'),

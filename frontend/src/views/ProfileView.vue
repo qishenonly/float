@@ -44,20 +44,27 @@ const showComingSoon = (feature) => {
   <div>
     <!-- Header -->
     <div class="px-6 pt-16 pb-8 relative z-10 animate-enter">
-      <div class="flex items-center gap-5 mb-8">
-        <div class="w-20 h-20 rounded-full p-1 bg-white shadow-lg relative group cursor-pointer">
-             <img :src="user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'User'}&backgroundColor=ffdfbf`" class="w-full h-full rounded-full group-hover:scale-105 transition duration-300" alt="avatar">
-             <div v-if="user?.verified" class="absolute bottom-0 right-0 w-6 h-6 bg-green-400 rounded-full border-2 border-white flex items-center justify-center text-white text-[10px]">
-                <i class="fa-solid fa-check"></i>
-             </div>
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-5">
+          <div class="w-20 h-20 rounded-full p-1 bg-white shadow-lg relative group cursor-pointer">
+               <img :src="user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'User'}&backgroundColor=ffdfbf`" class="w-full h-full rounded-full group-hover:scale-105 transition duration-300" alt="avatar">
+               <div v-if="user?.verified" class="absolute bottom-0 right-0 w-6 h-6 bg-green-400 rounded-full border-2 border-white flex items-center justify-center text-white text-[10px]">
+                  <i class="fa-solid fa-check"></i>
+               </div>
+          </div>
+          <div>
+              <h1 class="text-2xl font-extrabold text-gray-800">{{ user?.display_name || user?.username || '用户' }}</h1>
+              <div class="flex items-center gap-2 mt-1">
+                  <span v-if="user?.verified" class="bg-indigo-100 text-indigo-600 text-[10px] px-2 py-0.5 rounded-full font-bold">已实名</span>
+                  <p class="text-xs text-gray-400">坚持记账 {{ user?.continuous_days || 0 }} 天</p>
+              </div>
+          </div>
         </div>
-        <div>
-            <h1 class="text-2xl font-extrabold text-gray-800">{{ user?.display_name || user?.username || '用户' }}</h1>
-            <div class="flex items-center gap-2 mt-1">
-                <span v-if="user?.verified" class="bg-indigo-100 text-indigo-600 text-[10px] px-2 py-0.5 rounded-full font-bold">已实名</span>
-                <p class="text-xs text-gray-400">坚持记账 {{ user?.continuous_days || 0 }} 天</p>
-            </div>
-        </div>
+        
+        <!-- Edit Button -->
+        <RouterLink to="/profile/edit" class="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-indigo-600 hover:bg-indigo-50 transition active:scale-95">
+          <i class="fa-solid fa-pen text-sm"></i>
+        </RouterLink>
       </div>
 
       <GlassCard class="p-4 flex justify-between shadow-sm">

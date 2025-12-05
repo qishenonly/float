@@ -55,10 +55,15 @@ func (s *userService) Register(req *request.RegisterRequest) (*response.AuthResp
 	}
 
 	// 创建用户
+	var phone *string
+	if req.Phone != "" {
+		phone = &req.Phone
+	}
+
 	user := &models.User{
 		Username:     req.Username,
 		Email:        req.Email,
-		Phone:        req.Phone,
+		Phone:        phone,
 		PasswordHash: hashedPassword,
 		DisplayName:  req.DisplayName,
 		Currency:     "CNY",
@@ -161,11 +166,16 @@ func (s *userService) GetUserByID(userID int64) (*response.UserResponse, error) 
 		return nil, err
 	}
 
+	var phone string
+	if user.Phone != nil {
+		phone = *user.Phone
+	}
+
 	return &response.UserResponse{
 		ID:              user.ID,
 		Username:        user.Username,
 		Email:           user.Email,
-		Phone:           user.Phone,
+		Phone:           phone,
 		DisplayName:     user.DisplayName,
 		AvatarURL:       user.AvatarURL,
 		Verified:        user.Verified,
@@ -195,7 +205,7 @@ func (s *userService) UpdateUser(userID int64, req *request.UpdateUserRequest) e
 		user.DisplayName = *req.DisplayName
 	}
 	if req.Phone != nil {
-		user.Phone = *req.Phone
+		user.Phone = req.Phone
 	}
 	if req.Currency != nil {
 		user.Currency = *req.Currency

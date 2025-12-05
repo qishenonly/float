@@ -9,7 +9,7 @@ type User struct {
 	ID              int64      `gorm:"primaryKey;autoIncrement" json:"id"`
 	Username        string     `gorm:"size:50;uniqueIndex;not null" json:"username"`
 	Email           string     `gorm:"size:100;uniqueIndex;not null" json:"email"`
-	Phone           string     `gorm:"size:20;uniqueIndex" json:"phone,omitempty"`
+	Phone           *string    `gorm:"size:20;uniqueIndex" json:"phone,omitempty"`
 	PasswordHash    string     `gorm:"size:255;not null" json:"-"`
 	AvatarURL       string     `gorm:"size:500" json:"avatar_url,omitempty"`
 	DisplayName     string     `gorm:"size:50" json:"display_name,omitempty"`
