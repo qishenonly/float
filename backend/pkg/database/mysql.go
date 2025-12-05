@@ -49,6 +49,14 @@ func Init() error {
 	return nil
 }
 
+// AutoMigrate 自动迁移数据库表结构
+func AutoMigrate(models ...interface{}) error {
+	if DB == nil {
+		return fmt.Errorf("database not initialized")
+	}
+	return DB.AutoMigrate(models...)
+}
+
 // GetDB 获取数据库实例
 func GetDB() *gorm.DB {
 	return DB

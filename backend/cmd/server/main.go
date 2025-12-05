@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/qiuhaonan/float-backend/internal/api/routes"
+	"github.com/qiuhaonan/float-backend/internal/models"
 	"github.com/qiuhaonan/float-backend/pkg/cache"
 	"github.com/qiuhaonan/float-backend/pkg/database"
 	"github.com/qiuhaonan/float-backend/pkg/logger"
@@ -32,6 +33,13 @@ func main() {
 		logger.Fatal("Failed to initialize database:", err)
 	}
 	defer database.Close()
+
+	// 自动迁移数据库表
+	logger.Info("Running database migrations...")
+	if err := database.AutoMigrate(&models.User{}); err != nil {
+		logger.Fatal("Failed to migrate database:", err)
+	}
+	logger.Info("Database migrations completed")
 
 	// 初始化 Redis
 	if err := cache.Init(); err != nil {
@@ -82,7 +90,7 @@ func main() {
 }
 
 func initConfig() error {
-	viper.SetConfigName("config")
+	viper.SetConfigName("config.dev")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./config")
 	viper.AddConfigPath(".")

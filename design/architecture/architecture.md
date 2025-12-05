@@ -894,21 +894,23 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DB_HOST=postgres
+      - DB_HOST=mysql
       - REDIS_HOST=redis
     depends_on:
-      - postgres
+      - mysql
       - redis
     restart: unless-stopped
   
-  postgres:
-    image: postgres:15-alpine
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
     environment:
-      POSTGRES_DB: float_db
-      POSTGRES_USER: float_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: float_db
+      MYSQL_USER: float_user
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
     restart: unless-stopped
   
   redis:
@@ -926,7 +928,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgres_data:
+  mysql_data:
   minio_data:
 ```
 
@@ -954,7 +956,7 @@ spec:
         - containerPort: 8080
         env:
         - name: DB_HOST
-          value: "postgres-service"
+          value: "mysql-service"
         - name: REDIS_HOST
           value: "redis-service"
         resources:
@@ -1184,16 +1186,16 @@ go mod init github.com/yourusername/float-backend
 # 3. 安装依赖
 go get -u github.com/gin-gonic/gin
 go get -u gorm.io/gorm
-go get -u gorm.io/driver/postgres
+go get -u gorm.io/driver/mysql
 go get -u github.com/golang-jwt/jwt/v5
 go get -u github.com/go-redis/redis/v8
 go get -u github.com/spf13/viper
 
 # 4. 启动本地数据库（Docker）
-docker-compose up -d postgres redis
+docker-compose up -d mysql redis
 
 # 5. 运行迁移
-migrate -path migrations -database "postgres://localhost:5432/float_db" up
+migrate -path migrations -database "mysql://float_user:password@tcp(localhost:3306)/float_db" up
 
 # 6. 启动服务
 go run cmd/server/main.go

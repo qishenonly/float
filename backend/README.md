@@ -7,7 +7,7 @@ FloatIsland 个人财务管理应用后端服务
 - **框架**: Go 1.21+ with Gin
 - **数据库**: MySQL 8.0+
 - **缓存**: Redis 7+
-- **ORM**: GORM
+- **ORM**: GORM (支持自动迁移)
 - **认证**: JWT
 - **日志**: Zap
 - **配置**: Viper
@@ -33,7 +33,7 @@ backend/
 │   ├── logger/         # 日志封装
 │   └── storage/        # 对象存储封装
 ├── config/             # 配置文件
-├── migrations/         # 数据库迁移
+├── migrations/         # 数据库迁移（备份）
 ├── deployments/        # 部署配置
 │   └── docker/         # Docker 配置
 ├── docs/               # 文档
@@ -61,15 +61,20 @@ make deps
 
 复制配置文件并修改：
 ```bash
-cp config/config.yaml config/config.local.yaml
-# 编辑 config/config.local.yaml 配置数据库等信息
+cp config/config.yaml config/config.dev.yaml
+# 编辑 config/config.dev.yaml 配置数据库等信息
 ```
 
-3. **运行服务**
+3. **运行服务（会自动创建数据库表）**
 
 ```bash
 make run
 ```
+
+**⭐ 数据库表自动创建**
+- 使用 GORM AutoMigrate 自动创建和更新表结构
+- 启动时会自动检测并创建缺失的表
+- 无需手动执行 SQL 脚本
 
 服务将在 `http://localhost:8080` 启动
 
@@ -104,6 +109,7 @@ make docker-down
 详细的 API 文档请查看：
 - [API 设计文档](../design/api/api-spec.md)
 - [架构设计文档](../design/architecture/architecture.md)
+- [用户认证测试指南](./docs/api/user_auth_guide.md)
 
 ### 主要端点
 
@@ -116,27 +122,34 @@ make docker-down
 
 ## 开发指南
 
-### 添加新的 API 端点
-
-1. 在 `internal/api/handlers/` 添加处理函数
-2. 在 `internal/api/routes/router.go` 注册路由
-3. 在 `internal/service/` 实现业务逻辑
-4. 在 `internal/repository/` 实现数据访问
-
 ### 数据库迁移
 
-使用 golang-migrate 管理数据库迁移：
+**使用 GORM AutoMigrate（推荐）**
 
-```bash
-# 创建迁移文件
-migrate create -ext sql -dir migrations -seq create_users_table
+在 `cmd/server/main.go` 中添加新模型：
 
-# 执行迁移
-migrate -path migrations -database "mysql://user:pass@tcp(localhost:3306)/float_db" up
-
-# 回滚迁移
-migrate -path migrations -database "mysql://user:pass@tcp(localhost:3306)/float_db" down
+```go
+database.AutoMigrate(
+    &models.User{},
+    &models.Transaction{},
+    // 添加新模型...
+)
 ```
+
+GORM 会自动：
+- ✅ 创建表（如果不存在）
+- ✅ 添加新字段
+- ✅ 添加索引
+- ⚠️ 不会删除字段（需手动处理）
+
+### 添加新的 API 端点
+
+1. 在 `internal/models/` 定义数据模型
+2. 在 `internal/repository/` 实现数据访问
+3. 在 `internal/service/` 实现业务逻辑
+4. 在 `internal/api/handlers/` 添加处理函数
+5. 在 `internal/api/routes/router.go` 注册路由
+6. 在 `main.go` 的 AutoMigrate 中添加模型
 
 ## 测试
 
@@ -157,6 +170,31 @@ go test -v ./internal/service/...
 - `redis.*`: Redis 配置
 - `jwt.secret`: JWT 密钥
 - `storage.*`: 对象存储配置
+
+## 已实现功能
+
+### ✅ 用户认证模块
+- 用户注册（带验证）
+- 用户登录（JWT）
+- Token 刷新
+- 密码加密（bcrypt）
+
+### ✅ 用户管理模块
+- 获取用户信息
+- 更新用户资料
+- 修改密码
+- 用户统计
+
+### 🔜 待实现模块
+- 交易记录管理
+- 账户管理
+- 分类管理
+- 账单订阅
+- 储蓄计划
+- 心愿单
+- 预算管理
+- 通知系统
+- 数据导出
 
 ## 贡献指南
 

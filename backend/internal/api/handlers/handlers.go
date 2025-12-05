@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	dto_request "github.com/qiuhaonan/float-backend/internal/dto/request"
+	"github.com/qiuhaonan/float-backend/internal/service"
 	"github.com/qiuhaonan/float-backend/internal/utils"
 	"github.com/qiuhaonan/float-backend/pkg/cache"
 	"github.com/qiuhaonan/float-backend/pkg/database"
@@ -37,36 +39,122 @@ func HealthCheck(c *gin.Context) {
 
 // Register 用户注册
 func Register(c *gin.Context) {
-	// TODO: 实现注册逻辑
-	utils.SuccessResponse(c, gin.H{"message": "Register endpoint - to be implemented"})
+	var req dto_request.RegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "请求参数错误: "+err.Error())
+		return
+	}
+
+	userService := service.NewUserService()
+	authResp, err := userService.Register(&req)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(c, authResp)
 }
 
 // Login 用户登录
 func Login(c *gin.Context) {
-	// TODO: 实现登录逻辑
-	utils.SuccessResponse(c, gin.H{"message": "Login endpoint - to be implemented"})
+	var req dto_request.LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "请求参数错误: "+err.Error())
+		return
+	}
+
+	userService := service.NewUserService()
+	authResp, err := userService.Login(&req)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(c, authResp)
 }
 
 // RefreshToken 刷新Token
 func RefreshToken(c *gin.Context) {
-	// TODO: 实现刷新token逻辑
-	utils.SuccessResponse(c, gin.H{"message": "RefreshToken endpoint - to be implemented"})
+	var req dto_request.RefreshTokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "请求参数错误: "+err.Error())
+		return
+	}
+
+	userService := service.NewUserService()
+	tokenResp, err := userService.RefreshToken(req.RefreshToken)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(c, tokenResp)
 }
 
 // GetCurrentUser 获取当前用户
 func GetCurrentUser(c *gin.Context) {
 	userID := c.GetInt64("user_id")
-	utils.SuccessResponse(c, gin.H{"user_id": userID, "message": "GetCurrentUser endpoint - to be implemented"})
+
+	userService := service.NewUserService()
+	userResp, err := userService.GetUserByID(userID)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusNotFound, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(c, userResp)
 }
 
 // UpdateCurrentUser 更新当前用户
 func UpdateCurrentUser(c *gin.Context) {
-	utils.SuccessResponse(c, gin.H{"message": "UpdateCurrentUser endpoint - to be implemented"})
+	userID := c.GetInt64("user_id")
+
+	var req dto_request.UpdateUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "请求参数错误: "+err.Error())
+		return
+	}
+
+	userService := service.NewUserService()
+	if err := userService.UpdateUser(userID, &req); err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(c, gin.H{"message": "用户信息更新成功"})
+}
+
+// UpdatePassword 修改密码
+func UpdatePassword(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+
+	var req dto_request.UpdatePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "请求参数错误: "+err.Error())
+		return
+	}
+
+	userService := service.NewUserService()
+	if err := userService.UpdatePassword(userID, &req); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(c, gin.H{"message": "密码修改成功"})
 }
 
 // GetUserStats 获取用户统计
 func GetUserStats(c *gin.Context) {
-	utils.SuccessResponse(c, gin.H{"message": "GetUserStats endpoint - to be implemented"})
+	userID := c.GetInt64("user_id")
+
+	userService := service.NewUserService()
+	stats, err := userService.GetUserStats(userID)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(c, stats)
 }
 
 // GetTransactions 获取交易列表
