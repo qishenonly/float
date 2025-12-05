@@ -65,12 +65,15 @@ func SetupRouter() *gin.Engine {
 			}
 
 			// 分类管理
+			categoryHandler := handlers.NewCategoryHandler()
 			categories := authorized.Group("/categories")
 			{
-				categories.GET("", handlers.GetCategories)
-				categories.POST("", handlers.CreateCategory)
-				categories.PUT("/:id", handlers.UpdateCategory)
-				categories.DELETE("/:id", handlers.DeleteCategory)
+				categories.GET("", categoryHandler.GetCategories)
+				categories.POST("", categoryHandler.CreateCategory)
+				categories.GET("/system", categoryHandler.GetSystemCategories)
+				categories.GET("/:id", categoryHandler.GetCategory)
+				categories.PUT("/:id", categoryHandler.UpdateCategory)
+				categories.DELETE("/:id", categoryHandler.DeleteCategory)
 			}
 
 			// 账单订阅
