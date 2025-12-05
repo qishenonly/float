@@ -2,10 +2,12 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '../composables/useToast'
 import GlassCard from '../components/GlassCard.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { showToast } = useToast()
 
 const user = computed(() => authStore.currentUser)
 const loading = ref(false)
@@ -36,7 +38,7 @@ const handleLogout = async () => {
 }
 
 const showComingSoon = (feature) => {
-  alert(`${feature}功能开发中，敬请期待！`)
+  showToast(`${feature}功能开发中，敬请期待！`, 'info')
 }
 </script>
 
@@ -87,7 +89,7 @@ const showComingSoon = (feature) => {
     <div class="px-6 py-2 relative z-10">
       <GlassCard class="rounded-2xl shadow-sm overflow-hidden mb-6 animate-enter delay-100">
         <div class="divide-y divide-gray-100/50">
-            <div @click="router.push('/accounts')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
+            <!-- <div @click="router.push('/accounts')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition">
                         <i class="fa-solid fa-wallet text-sm"></i>
@@ -95,7 +97,7 @@ const showComingSoon = (feature) => {
                     <span class="text-sm font-bold text-gray-700">账户管理</span>
                 </div>
                 <i class="fa-solid fa-chevron-right text-gray-300 text-xs group-hover:text-gray-500 transition"></i>
-            </div>
+            </div> -->
             <div @click="router.push('/categories')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center group-hover:scale-110 transition">
@@ -105,7 +107,7 @@ const showComingSoon = (feature) => {
                 </div>
                 <i class="fa-solid fa-chevron-right text-gray-300 text-xs group-hover:text-gray-500 transition"></i>
             </div>
-            <div @click="router.push('/export')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
+            <div @click="showToast('账单导出功能开发中...', 'info')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-green-50 text-green-500 flex items-center justify-center group-hover:scale-110 transition">
                         <i class="fa-solid fa-file-export text-sm"></i>

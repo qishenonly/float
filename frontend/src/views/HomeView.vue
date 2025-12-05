@@ -2,10 +2,12 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '../composables/useToast'
 import GlassCard from '../components/GlassCard.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { showToast } = useToast()
 
 const user = computed(() => authStore.currentUser)
 const displayName = computed(() => user.value?.display_name || user.value?.username || 'User')
@@ -82,25 +84,25 @@ const avatarSeed = computed(() => user.value?.username || 'User')
 
     <!-- Quick Actions -->
     <div class="px-6 mt-6 grid grid-cols-4 gap-4 animate-enter delay-200">
-      <div @click="router.push('/wishlist')" class="flex flex-col items-center gap-2 cursor-pointer group active-press">
+      <div @click="showToast('心愿单功能开发中...', 'info')" class="flex flex-col items-center gap-2 cursor-pointer group active-press">
         <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl text-pink-500 group-hover:shadow-md group-hover:-translate-y-1 transition duration-300">
           <i class="fa-solid fa-gift"></i>
         </div>
         <span class="text-[10px] font-medium text-gray-500">心愿单</span>
       </div>
-      <div @click="router.push('/calendar')" class="flex flex-col items-center gap-2 cursor-pointer group active-press">
+      <div @click="showToast('日历功能开发中...', 'info')" class="flex flex-col items-center gap-2 cursor-pointer group active-press">
         <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl text-blue-500 group-hover:shadow-md group-hover:-translate-y-1 transition duration-300">
           <i class="fa-solid fa-calendar-days"></i>
         </div>
         <span class="text-[10px] font-medium text-gray-500">日历</span>
       </div>
-      <div @click="router.push('/savings')" class="flex flex-col items-center gap-2 cursor-pointer group active-press">
+      <div @click="showToast('存钱功能开发中...', 'info')" class="flex flex-col items-center gap-2 cursor-pointer group active-press">
         <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl text-orange-500 group-hover:shadow-md group-hover:-translate-y-1 transition duration-300">
           <i class="fa-solid fa-piggy-bank"></i>
         </div>
         <span class="text-[10px] font-medium text-gray-500">存钱</span>
       </div>
-      <div @click="router.push('/bills')" class="flex flex-col items-center gap-2 cursor-pointer group active-press">
+      <div @click="showToast('账单功能开发中...', 'info')" class="flex flex-col items-center gap-2 cursor-pointer group active-press">
         <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl text-indigo-500 group-hover:shadow-md group-hover:-translate-y-1 transition duration-300">
           <i class="fa-solid fa-file-invoice"></i>
         </div>

@@ -2,7 +2,7 @@ package request
 
 // CreateAccountRequest 创建账户请求
 type CreateAccountRequest struct {
-	AccountType    string  `json:"account_type" binding:"required,oneof=bank alipay wechat cash other"`
+	AccountType    string  `json:"account_type" binding:"required,oneof=bank alipay wechat cash credit other"`
 	AccountName    string  `json:"account_name" binding:"required,max=100"`
 	AccountNumber  string  `json:"account_number" binding:"max=50"`
 	Icon           string  `json:"icon" binding:"max=50"`
