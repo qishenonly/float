@@ -54,14 +54,15 @@ func SetupRouter() *gin.Engine {
 			}
 
 			// 账户管理
+			accountHandler := handlers.NewAccountHandler()
 			accounts := authorized.Group("/accounts")
 			{
-				accounts.GET("", handlers.GetAccounts)
-				accounts.POST("", handlers.CreateAccount)
-				accounts.GET("/:id", handlers.GetAccount)
-				accounts.PUT("/:id", handlers.UpdateAccount)
-				accounts.DELETE("/:id", handlers.DeleteAccount)
-				accounts.GET("/balance", handlers.GetAccountBalance)
+				accounts.GET("", accountHandler.GetAccounts)
+				accounts.POST("", accountHandler.CreateAccount)
+				accounts.GET("/balance", accountHandler.GetAccountBalance)
+				accounts.GET("/:id", accountHandler.GetAccount)
+				accounts.PUT("/:id", accountHandler.UpdateAccount)
+				accounts.DELETE("/:id", accountHandler.DeleteAccount)
 			}
 
 			// 分类管理

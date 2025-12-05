@@ -87,6 +87,15 @@ const showComingSoon = (feature) => {
     <div class="px-6 py-2 relative z-10">
       <GlassCard class="rounded-2xl shadow-sm overflow-hidden mb-6 animate-enter delay-100">
         <div class="divide-y divide-gray-100/50">
+            <div @click="router.push('/accounts')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition">
+                        <i class="fa-solid fa-wallet text-sm"></i>
+                    </div>
+                    <span class="text-sm font-bold text-gray-700">账户管理</span>
+                </div>
+                <i class="fa-solid fa-chevron-right text-gray-300 text-xs group-hover:text-gray-500 transition"></i>
+            </div>
             <div @click="router.push('/categories')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center group-hover:scale-110 transition">

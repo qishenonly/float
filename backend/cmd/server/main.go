@@ -36,7 +36,7 @@ func main() {
 
 	// 自动迁移数据库表
 	logger.Info("Running database migrations...")
-	if err := database.AutoMigrate(&models.User{}, &models.Category{}); err != nil {
+	if err := database.AutoMigrate(&models.User{}, &models.Category{}, &models.Account{}); err != nil {
 		logger.Fatal("Failed to migrate database:", err)
 	}
 	logger.Info("Database migrations completed")

@@ -60,6 +60,13 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/accounts',
+      name: 'accounts',
+      component: () => import('../views/AccountsView.vue'),
+      meta: { requiresAuth: true }
+    },
+
+    {
       path: '/wishlist',
       name: 'wishlist',
       component: () => import('../views/WishlistView.vue'),
