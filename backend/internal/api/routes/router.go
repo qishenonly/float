@@ -4,6 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/qiuhaonan/float-backend/internal/api/handlers"
 	"github.com/qiuhaonan/float-backend/internal/api/middlewares"
+	"github.com/qiuhaonan/float-backend/internal/repository"
+	"github.com/qiuhaonan/float-backend/internal/service"
+	"github.com/qiuhaonan/float-backend/pkg/database"
 )
 
 // SetupRouter 设置路由
@@ -96,7 +99,23 @@ func SetupRouter() *gin.Engine {
 				notifications.GET("/unread", handlers.GetUnreadCount)
 			}
 		}
+
+		// 软件更新 (公开接口或部分公开)
+		appUpdateRepo := repository.NewAppUpdateRepository(database.DB)
+		appUpdateService := service.NewAppUpdateService(appUpdateRepo)
+		appUpdateHandler := handlers.NewAppUpdateHandler(appUpdateService)
+
+		appUpdates := v1.Group("/app-updates")
+		{
+			appUpdates.GET("/check", appUpdateHandler.CheckUpdate)
+			appUpdates.GET("/latest", appUpdateHandler.GetLatest)
+			appUpdates.GET("/history", appUpdateHandler.GetHistory)
+			appUpdates.POST("", appUpdateHandler.Upload)
+		}
 	}
+
+	// 静态文件服务
+	router.Static("/uploads", "./uploads")
 
 	return router
 }

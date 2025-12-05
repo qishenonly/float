@@ -10,7 +10,10 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-var DB *gorm.DB
+var (
+	DB                *gorm.DB
+	ErrRecordNotFound = gorm.ErrRecordNotFound
+)
 
 // Init 初始化数据库连接
 func Init() error {

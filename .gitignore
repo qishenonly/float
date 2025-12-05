@@ -125,6 +125,7 @@ config/secrets.yaml
 /backend/target/
 /backend/venv/
 /backend/__pycache__/
+/backend/uploads/
 
 # ===================================================================
 #  其他常见文件
