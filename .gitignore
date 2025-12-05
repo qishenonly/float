@@ -118,7 +118,7 @@ config/secrets.yaml
 # ===================================================================
 /frontend/dist/
 /frontend/build/
-/frontend/android/
+# /frontend/android/
 /frontend/node_modules/
 /backend/dist/
 /backend/build/
