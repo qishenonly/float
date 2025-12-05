@@ -111,6 +111,7 @@ logs/
 secrets.yaml
 config/secrets.yaml
 !config/example_secrets.yaml
+*.dev.yaml
 
 # ===================================================================
 #  前端/后端自定义构建目录 (可根据项目调整)
