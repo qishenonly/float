@@ -9,7 +9,7 @@ import { useAppUpdate } from './composables/useAppUpdate'
 
 const route = useRoute()
 const { toastState, hideToast } = useToast()
-const { updateState, checkUpdate, startUpdate, closeUpdateModal } = useAppUpdate()
+const { updateState, checkUpdate, openUpdateDialog, confirmUpdate, closeUpdateModal } = useAppUpdate()
 
 onMounted(async () => {
   try {
@@ -17,10 +17,7 @@ onMounted(async () => {
     if (latest) {
       // 延时一点显示，避免和页面加载冲突
       setTimeout(() => {
-        const confirmed = confirm(`发现新版本 ${latest.version_name}\n\n${latest.description}\n\n是否立即更新？`)
-        if (confirmed) {
-          startUpdate(latest)
-        }
+        openUpdateDialog(latest)
       }, 1000)
     }
   } catch (error) {
@@ -59,6 +56,9 @@ onMounted(async () => {
         :progress="updateState.progress"
         :status="updateState.status"
         :version="updateState.latestVersion?.version_name"
+        :description="updateState.latestVersion?.description"
+        @confirm="confirmUpdate"
+        @cancel="closeUpdateModal"
         @close="closeUpdateModal"
       />
     </div>

@@ -8,13 +8,16 @@ const props = defineProps({
     type: String,
     default: 'downloading' // downloading, installing, error
   },
-  version: String
+  version: String,
+  description: String
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'confirm', 'cancel'])
 
 const statusText = computed(() => {
   switch (props.status) {
+    case 'prompt':
+       return '新版本已准备就绪'
     case 'downloading':
       return '正在下载更新包...'
     case 'installing':
@@ -37,20 +40,35 @@ const statusText = computed(() => {
       <div class="bg-white rounded-3xl w-full max-w-sm p-6 relative z-10 shadow-2xl animate-scale">
         <div class="text-center mb-6">
           <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 text-2xl">
-            <i class="fa-solid fa-cloud-arrow-down animate-bounce"></i>
+            <i v-if="status === 'prompt'" class="fa-solid fa-gift animate-bounce"></i>
+            <i v-else-if="status === 'error'" class="fa-solid fa-circle-exclamation text-red-500"></i>
+            <i v-else class="fa-solid fa-cloud-arrow-down animate-bounce"></i>
           </div>
-          <h3 class="text-xl font-bold text-gray-800 mb-1">发现新版本 {{ version }}</h3>
+          <h3 class="text-xl font-bold text-gray-800 mb-1">
+            {{ status === 'prompt' ? `发现新版本 ${version}` : (status === 'error' ? '更新失败' : `正在更新 ${version}`) }}
+          </h3>
           <p class="text-sm text-gray-500">{{ statusText }}</p>
         </div>
 
+        <!-- Prompt Content -->
+        <div v-if="status === 'prompt'">
+           <div class="bg-gray-50 rounded-xl p-4 mb-6 text-left max-h-40 overflow-y-auto">
+              <p class="text-sm text-gray-600 whitespace-pre-wrap">{{ description || '修复了一些已知问题，优化用户体验。' }}</p>
+           </div>
+           <div class="flex gap-3">
+             <button @click="$emit('cancel')" class="flex-1 py-3 bg-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-200 transition">稍后再说</button>
+             <button @click="$emit('confirm')" class="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">立即更新</button>
+           </div>
+        </div>
+
         <!-- Progress Bar -->
-        <div class="mb-2 relative h-4 bg-gray-100 rounded-full overflow-hidden">
+        <div v-else-if="status === 'downloading' || status === 'installing'" class="mb-2 relative h-4 bg-gray-100 rounded-full overflow-hidden">
           <div 
             class="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-300 ease-out"
             :style="{ width: `${progress}%` }"
           ></div>
         </div>
-        <div class="flex justify-between text-xs text-gray-400 font-medium mb-6">
+        <div v-if="status === 'downloading' || status === 'installing'" class="flex justify-between text-xs text-gray-400 font-medium mb-6">
           <span>{{ progress }}%</span>
           <span>100%</span>
         </div>

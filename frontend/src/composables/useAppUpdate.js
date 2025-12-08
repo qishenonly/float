@@ -108,6 +108,19 @@ export function useAppUpdate() {
     })
   }
 
+  const openUpdateDialog = (version) => {
+    updateState.latestVersion = version
+    updateState.showModal = true
+    updateState.status = 'prompt'
+    updateState.progress = 0
+  }
+
+  const confirmUpdate = () => {
+    if (updateState.latestVersion) {
+      startUpdate(updateState.latestVersion)
+    }
+  }
+
   const closeUpdateModal = () => {
     updateState.showModal = false
   }
@@ -117,6 +130,8 @@ export function useAppUpdate() {
     currentVersion,
     checkUpdate,
     startUpdate,
+    openUpdateDialog,
+    confirmUpdate,
     closeUpdateModal
   }
 }

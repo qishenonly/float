@@ -12,11 +12,11 @@ resize_icon() {
     echo "Processing $density ($size x $size)..."
     
     if [ -d "$target_dir" ]; then
-        sips -z $size $size "$SOURCE_IMG" --out "$target_dir/ic_launcher.png"
-        sips -z $size $size "$SOURCE_IMG" --out "$target_dir/ic_launcher_round.png"
+        sips -s format png -z $size $size "$SOURCE_IMG" --out "$target_dir/ic_launcher.png"
+        sips -s format png -z $size $size "$SOURCE_IMG" --out "$target_dir/ic_launcher_round.png"
         
         if [ -f "$target_dir/ic_launcher_foreground.png" ]; then
-             sips -z $size $size "$SOURCE_IMG" --out "$target_dir/ic_launcher_foreground.png"
+             sips -s format png -z $size $size "$SOURCE_IMG" --out "$target_dir/ic_launcher_foreground.png"
         fi
     else
         echo "Directory $target_dir does not exist, skipping."

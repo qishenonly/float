@@ -7,7 +7,7 @@ import GlassCard from '../components/GlassCard.vue'
 
 const router = useRouter()
 const { showToast } = useToast()
-const { currentVersion, checkUpdate, startUpdate } = useAppUpdate()
+const { currentVersion, checkUpdate, openUpdateDialog } = useAppUpdate()
 
 const hasUpdate = ref(false)
 const latestVersion = ref(null)
@@ -32,7 +32,7 @@ const performCheck = async (manual = false) => {
       hasUpdate.value = true
       latestVersion.value = latest
       if (manual) {
-        showUpdateDialog()
+        openUpdateDialog(latest)
       }
     } else {
       hasUpdate.value = false
@@ -51,19 +51,10 @@ const performCheck = async (manual = false) => {
 }
 
 const handleUpdateClick = () => {
-  if (hasUpdate.value) {
-    showUpdateDialog()
+  if (hasUpdate.value && latestVersion.value) {
+    openUpdateDialog(latestVersion.value)
   } else {
     performCheck(true)
-  }
-}
-
-const showUpdateDialog = () => {
-  if (!latestVersion.value) return
-  
-  const confirmed = confirm(`发现新版本 ${latestVersion.value.version_name}\n\n${latestVersion.value.description}\n\n是否立即更新？`)
-  if (confirmed) {
-    startUpdate(latestVersion.value)
   }
 }
 </script>

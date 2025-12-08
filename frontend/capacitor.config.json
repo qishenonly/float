@@ -5,7 +5,7 @@
   "server": {
     "androidScheme": "http",
     "cleartext": true,
-    "allowNavigation": ["10.0.2.2", "192.168.0.59"]
+    "allowNavigation": ["10.0.2.2", "192.168.0.119"]
   },
   "android": {
     "allowMixedContent": true
