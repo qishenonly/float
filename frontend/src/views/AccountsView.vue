@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from '../composables/useToast'
 import { accountAPI } from '@/api/account'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const router = useRouter()
 const { showToast } = useToast()
@@ -12,6 +13,8 @@ const totalBalance = ref(0)
 const loading = ref(false)
 const showModal = ref(false)
 const editingAccount = ref(null)
+const showDeleteConfirm = ref(false)
+const pendingDeleteAccount = ref(null)
 
 const formData = ref({
   account_type: 'bank',
@@ -121,15 +124,21 @@ const saveAccount = async () => {
   }
 }
 
-const deleteAccount = async (account) => {
-  if (!confirm(`确定要删除账户"${account.account_name}"吗？`)) {
-    return
-  }
+const deleteAccount = (account) => {
+  pendingDeleteAccount.value = account
+  showDeleteConfirm.value = true
+}
 
+const confirmDeleteAccount = async () => {
+  if (!pendingDeleteAccount.value) return
+  
   loading.value = true
   try {
-    await accountAPI.deleteAccount(account.id)
+    await accountAPI.deleteAccount(pendingDeleteAccount.value.id)
     showToast('账户删除成功', 'success')
+    showDeleteConfirm.value = false
+    showModal.value = false
+    pendingDeleteAccount.value = null
     await loadData()
   } catch (error) {
     console.error('Failed to delete account:', error)
@@ -232,7 +241,7 @@ const formatCurrency = (amount) => {
 
     <!-- Add/Edit Modal -->
     <div v-if="showModal" class="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center sm:p-6" @click.self="closeModal">
-      <div class="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 space-y-5 animate-slide-up sm:animate-enter max-h-[90vh] overflow-y-auto">
+      <div class="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 pb-24 space-y-5 animate-slide-up sm:animate-enter max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between sticky top-0 bg-white z-10 pb-2">
           <h2 class="text-lg font-bold text-gray-800">{{ editingAccount ? '编辑账户' : '添加账户' }}</h2>
           <button @click="closeModal" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
@@ -347,6 +356,16 @@ const formatCurrency = (amount) => {
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirm Modal -->
+    <ConfirmModal
+      :show="showDeleteConfirm"
+      title="删除账户"
+      :content="`确定要删除账户「${pendingDeleteAccount?.account_name}」吗？删除后无法恢复。`"
+      confirmText="删除"
+      @close="showDeleteConfirm = false; pendingDeleteAccount = null"
+      @confirm="confirmDeleteAccount"
+    />
   </div>
 </template>
 

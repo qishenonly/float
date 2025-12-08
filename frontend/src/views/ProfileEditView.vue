@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-violet-50 via-pink-50 to-cyan-50 pb-8">
     <!-- Header -->
-    <div class="flex items-center justify-between px-6 py-4 animate-enter">
+    <div class="flex items-center justify-between px-6 pt-12 pb-4 animate-enter">
       <button @click="handleCancel" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-700 hover:bg-white/50 transition">
         <i class="fa-solid fa-arrow-left"></i>
       </button>
@@ -95,6 +95,15 @@
         </RouterLink>
       </div>
     </div>
+    <!-- Confirm Modal -->
+    <ConfirmModal
+      :show="showConfirmModal"
+      title="放弃修改"
+      content="确定要放弃当前的修改吗？未保存的内容将会丢失。"
+      confirm-text="确定放弃"
+      @close="showConfirmModal = false"
+      @confirm="confirmCancel"
+    />
   </div>
 </template>
 
@@ -104,6 +113,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { userAPI } from '@/api/user'
 import { useToast } from '@/composables/useToast'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -111,6 +121,7 @@ const { showToast } = useToast()
 
 const user = computed(() => authStore.currentUser)
 const loading = ref(false)
+const showConfirmModal = ref(false)
 
 const formData = ref({
   display_name: '',
@@ -172,9 +183,21 @@ const handleSave = async () => {
 }
 
 const handleCancel = () => {
-  if (confirm('确定要放弃修改吗？')) {
+  // Check if form changed
+  const hasChanges = 
+    formData.value.display_name !== (user.value?.display_name || '') ||
+    formData.value.phone !== (user.value?.phone || '')
+
+  if (hasChanges) {
+    showConfirmModal.value = true
+  } else {
     router.back()
   }
+}
+
+const confirmCancel = () => {
+  showConfirmModal.value = false
+  router.back()
 }
 </script>
 

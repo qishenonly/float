@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from '../composables/useToast'
 import { categoryAPI } from '@/api/category'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const router = useRouter()
 const { showToast } = useToast()
@@ -12,6 +13,8 @@ const categories = ref([])
 const loading = ref(false)
 const showModal = ref(false)
 const editingCategory = ref(null)
+const showDeleteConfirm = ref(false)
+const pendingDeleteCategory = ref(null)
 
 const formData = ref({
   name: '',
@@ -113,20 +116,25 @@ const saveCategory = async () => {
 }
 
 // 删除分类
-const deleteCategory = async (category) => {
+const deleteCategory = (category) => {
   if (category.is_system) {
     showToast('系统分类不可删除', 'error')
     return
   }
 
-  if (!confirm(`确定要删除分类"${category.name}"吗？`)) {
-    return
-  }
+  pendingDeleteCategory.value = category
+  showDeleteConfirm.value = true
+}
 
+const confirmDeleteCategory = async () => {
+  if (!pendingDeleteCategory.value) return
+  
   loading.value = true
   try {
-    await categoryAPI.deleteCategory(category.id)
+    await categoryAPI.deleteCategory(pendingDeleteCategory.value.id)
     showToast('分类删除成功', 'success')
+    showDeleteConfirm.value = false
+    pendingDeleteCategory.value = null
     await loadCategories()
   } catch (error) {
     console.error('Failed to delete category:', error)
@@ -252,8 +260,8 @@ const closeModal = () => {
                 v-for="icon in availableIcons"
                 :key="icon"
                 @click="formData.icon = icon"
-                :class="formData.icon === icon ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-50 text-gray-400'"
-                class="w-full aspect-square rounded-xl flex items-center justify-center hover:bg-indigo-50 transition"
+                :class="formData.icon === icon ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'"
+                class="w-full aspect-square rounded-xl flex items-center justify-center transition"
               >
                 <i :class="`fa-solid ${icon}`"></i>
               </button>
@@ -289,5 +297,16 @@ const closeModal = () => {
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <ConfirmModal 
+      :show="showDeleteConfirm"
+      title="确认删除"
+      :content="`确定要删除分类「${pendingDeleteCategory?.name}」吗？`"
+      confirmText="删除"
+      cancelText="取消"
+      @confirm="confirmDeleteCategory"
+      @close="showDeleteConfirm = false"
+    />
   </div>
 </template>
