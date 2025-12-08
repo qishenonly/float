@@ -11,10 +11,12 @@
     "android:open": "vite build && npx cap sync android && npx cap open android"
   },
   "dependencies": {
+    "@capacitor-community/file-opener": "^7.0.1",
     "@capacitor/android": "^7.4.4",
     "@capacitor/app": "^7.1.0",
     "@capacitor/cli": "^7.4.4",
     "@capacitor/core": "^7.4.4",
+    "@capacitor/filesystem": "^7.1.5",
     "axios": "^1.6.0",
     "pinia": "^2.1.0",
     "vue": "^3.4.0",

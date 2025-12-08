@@ -3,41 +3,30 @@ import { RouterView, useRoute } from 'vue-router'
 import { onMounted } from 'vue'
 import BottomNav from './components/BottomNav.vue'
 import Toast from './components/Toast.vue'
+import UpdateModal from './components/UpdateModal.vue'
 import { useToast } from './composables/useToast'
-import { appUpdateAPI } from '@/api/appUpdate'
+import { useAppUpdate } from './composables/useAppUpdate'
 
 const route = useRoute()
 const { toastState, hideToast } = useToast()
+const { updateState, checkUpdate, startUpdate, closeUpdateModal } = useAppUpdate()
 
-onMounted(() => {
-  checkUpdate()
-})
-
-const checkUpdate = async () => {
+onMounted(async () => {
   try {
-    // 当前版本信息 (应与 SettingsView 保持一致或提取为常量)
-    const currentVersion = {
-      code: 1,
-      name: '1.0.0',
-      platform: 'android'
-    }
-    
-    const data = await appUpdateAPI.checkUpdate(currentVersion.platform, currentVersion.code)
-    
-    if (data.has_update && data.latest) {
+    const latest = await checkUpdate()
+    if (latest) {
       // 延时一点显示，避免和页面加载冲突
       setTimeout(() => {
-        const confirmed = confirm(`发现新版本 ${data.latest.version_name}\n\n${data.latest.description}\n\n是否立即更新？`)
-        if (confirmed && data.latest.download_url) {
-          const downloadUrl = `${import.meta.env.VITE_API_BASE_URL.replace('/api/v1', '')}${data.latest.download_url}`
-          window.open(downloadUrl, '_blank')
+        const confirmed = confirm(`发现新版本 ${latest.version_name}\n\n${latest.description}\n\n是否立即更新？`)
+        if (confirmed) {
+          startUpdate(latest)
         }
       }, 1000)
     }
   } catch (error) {
     console.error('Auto check update failed:', error)
   }
-}
+})
 </script>
 
 <template>
@@ -62,6 +51,15 @@ const checkUpdate = async () => {
         :message="toastState.message" 
         :type="toastState.type"
         @close="hideToast"
+      />
+
+      <!-- Update Modal -->
+      <UpdateModal
+        :show="updateState.showModal"
+        :progress="updateState.progress"
+        :status="updateState.status"
+        :version="updateState.latestVersion?.version_name"
+        @close="closeUpdateModal"
       />
     </div>
   </div>

@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { appUpdateAPI } from '../api/appUpdate'
 import { useToast } from '../composables/useToast'
+import { useAppUpdate } from '../composables/useAppUpdate'
 import GlassCard from '../components/GlassCard.vue'
 
 const router = useRouter()
 const { showToast } = useToast()
+const { currentVersion, checkUpdate, startUpdate } = useAppUpdate()
 
 const hasUpdate = ref(false)
 const latestVersion = ref(null)
@@ -16,27 +17,20 @@ const checking = ref(false)
 const darkMode = ref(false)
 const gestureLock = ref(true)
 
-// Current version info
-const currentVersion = {
-  code: 1,
-  name: '1.0.0',
-  platform: 'android'
-}
-
 onMounted(async () => {
-  await checkUpdate()
+  await performCheck()
 })
 
-const checkUpdate = async (manual = false) => {
+const performCheck = async (manual = false) => {
   if (checking.value) return
   checking.value = true
   
   try {
-    const data = await appUpdateAPI.checkUpdate(currentVersion.platform, currentVersion.code)
+    const latest = await checkUpdate(manual)
     
-    if (data.has_update) {
+    if (latest) {
       hasUpdate.value = true
-      latestVersion.value = data.latest
+      latestVersion.value = latest
       if (manual) {
         showUpdateDialog()
       }
@@ -60,7 +54,7 @@ const handleUpdateClick = () => {
   if (hasUpdate.value) {
     showUpdateDialog()
   } else {
-    checkUpdate(true)
+    performCheck(true)
   }
 }
 
@@ -68,9 +62,8 @@ const showUpdateDialog = () => {
   if (!latestVersion.value) return
   
   const confirmed = confirm(`发现新版本 ${latestVersion.value.version_name}\n\n${latestVersion.value.description}\n\n是否立即更新？`)
-  if (confirmed && latestVersion.value.download_url) {
-    const downloadUrl = `${import.meta.env.VITE_API_BASE_URL.replace('/api/v1', '')}${latestVersion.value.download_url}`
-    window.open(downloadUrl, '_blank')
+  if (confirmed) {
+    startUpdate(latestVersion.value)
   }
 }
 </script>
