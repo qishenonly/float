@@ -35,7 +35,7 @@ onMounted(async () => {
       <div class="blob w-64 h-64 bg-pink-200 rounded-full top-20 -right-20 mix-blend-multiply"></div>
 
       <!-- Main Content Area -->
-      <div class="flex-1 overflow-y-auto hide-scrollbar pb-32 relative z-10">
+      <div class="flex-1 overflow-y-auto hide-scrollbar pb-8 relative z-10">
         <RouterView />
       </div>
 
