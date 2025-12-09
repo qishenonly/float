@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>浮岛 Float Island - 你的财富栖息地</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#1e1b4b', // 深靛蓝
+                            primary: '#4f46e5', // 主色
+                            accent: '#06b6d4', // 亮青
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Noto Sans SC', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'float': '0 20px 40px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FAFAFA;
+            color: #1e293b;
+            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif;
+        }
+
+        /* 1. 动态流体背景 (Light Mode Version) */
+        .mesh-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            background: #ffffff;
+            overflow: hidden;
+        }
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: floatBlob 20s infinite alternate ease-in-out;
+            border-radius: 50%;
+        }
+        /* 定义三个柔和的色彩球 */
+        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #e0f2fe; animation-duration: 25s; } /* 浅蓝 */
+        .blob-2 { bottom: -10%; right: -10%; width: 40vw; height: 40vw; background: #fce7f3; animation-duration: 20s; } /* 浅粉 */
+        .blob-3 { top: 40%; left: 30%; width: 30vw; height: 30vw; background: #ede9fe; animation-duration: 30s; } /* 浅紫 */
+
+        @keyframes floatBlob {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, -30px) scale(1.1); }
+        }
+
+        /* 2. 高透玻璃拟态 */
+        .glass {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        }
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+
+        /* 3. 3D 透视容器 */
+        .perspective-wrap { perspective: 2000px; }
+        .tilt-card { transform-style: preserve-3d; will-change: transform; }
+
+        /* 浮动动画 */
+        .float-anim { animation: float 6s ease-in-out infinite; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* 隐藏滚动条 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* 文本渐变 */
+        .text-gradient {
+            background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

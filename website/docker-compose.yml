@@ -1,0 +1,52 @@
+# version: '3.8'  # Removed obsolete version field
+
+services:
+  float-island-website:
+    image: float-island-website:latest
+    container_name: float-island-website
+    ports:
+      - "8080:4173"  # Map host port 8080 to container port 4173
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - float-network
+
+  # Optional: Add nginx reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    container_name: float-island-nginx
+    ports:
+      - "80:80"
+      - "443:443"  # For HTTPS (requires SSL certificates)
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro  # For SSL certificates (optional)
+    depends_on:
+      - float-island-website
+    restart: unless-stopped
+    networks:
+      - float-network
+    profiles:
+      - production  # Only start nginx in production mode
+
+networks:
+  float-network:
+    driver: bridge
+
+# Usage examples:
+#
+# Development (just the website):
+#   docker-compose up -d
+#
+# Production (with nginx reverse proxy):
+#   docker-compose --profile production up -d
+#
+# Stop all services:
+#   docker-compose down
+#
+# View logs:
+#   docker-compose logs -f
+#
+# Rebuild and restart:
+#   docker-compose up -d --build

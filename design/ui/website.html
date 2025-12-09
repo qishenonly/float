@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>浮岛 Float Island - 你的财富栖息地</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#1e1b4b', // 深靛蓝
+                            primary: '#4f46e5', // 主色
+                            accent: '#06b6d4', // 亮青
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Noto Sans SC', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'float': '0 20px 40px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FAFAFA;
+            color: #1e293b;
+            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif;
+        }
+
+        /* 1. 动态流体背景 (Light Mode Version) */
+        .mesh-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            background: #ffffff;
+            overflow: hidden;
+        }
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: floatBlob 20s infinite alternate ease-in-out;
+            border-radius: 50%;
+        }
+        /* 定义三个柔和的色彩球 */
+        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #e0f2fe; animation-duration: 25s; } /* 浅蓝 */
+        .blob-2 { bottom: -10%; right: -10%; width: 40vw; height: 40vw; background: #fce7f3; animation-duration: 20s; } /* 浅粉 */
+        .blob-3 { top: 40%; left: 30%; width: 30vw; height: 30vw; background: #ede9fe; animation-duration: 30s; } /* 浅紫 */
+
+        @keyframes floatBlob {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, -30px) scale(1.1); }
+        }
+
+        /* 2. 高透玻璃拟态 */
+        .glass {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        }
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+
+        /* 3. 3D 透视容器 */
+        .perspective-wrap { perspective: 2000px; }
+        .tilt-card { transform-style: preserve-3d; will-change: transform; }
+        
+        /* 浮动动画 */
+        .float-anim { animation: float 6s ease-in-out infinite; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* 隐藏滚动条 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* 文本渐变 */
+        .text-gradient {
+            background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="mesh-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <nav class="fixed top-0 w-full z-50 transition-all duration-300 py-4" id="navbar">
+        <div class="container mx-auto px-6">
+            <div class="glass rounded-full px-6 py-3 flex justify-between items-center">
+                <a href="#" class="flex items-center gap-2 group">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg group-hover:rotate-12 transition-transform">
+                        <i class="fa-solid fa-mountain-sun text-sm"></i>
+                    </div>
+                    <span class="text-lg font-bold text-gray-800 tracking-tight">Float<span class="text-indigo-600">.Island</span></span>
+                </a>
+                
+                <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-500">
+                    <a href="#features" class="hover:text-indigo-600 transition">特性</a>
+                    <a href="#showcase" class="hover:text-indigo-600 transition">预览</a>
+                    <a href="#reviews" class="hover:text-indigo-600 transition">口碑</a>
+                    <a href="#faq" class="hover:text-indigo-600 transition">常见问题</a>
+                </div>
+
+                <button class="bg-gray-900 text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-200 transition-all transform hover:-translate-y-0.5">
+                    下载 App
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <header class="min-h-[110vh] flex items-center justify-center relative pt-20 overflow-hidden">
+        <div class="container mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center relative z-10 perspective-wrap">
+            
+            <div class="space-y-8 pl-4 lg:pl-0">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 border border-indigo-100 backdrop-blur-sm shadow-sm animate-enter">
+                    <span class="flex h-2 w-2 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                    </span>
+                    <span class="text-xs font-bold text-indigo-900 uppercase tracking-wide">全新 1.0 版本现已发布</span>
+                </div>
+                
+                <h1 class="text-5xl lg:text-7xl font-extrabold leading-[1.1] text-gray-900 tracking-tight">
+                    <span class="text-gradient">把生活过得清澈，把财富看得透明。</span>
+                </h1>
+                
+                <p class="text-lg text-gray-500 max-w-lg leading-relaxed">
+                    浮岛 (Float) 摒弃了枯燥的表格，用<strong>玻璃拟态美学</strong>和<strong>流畅的微交互</strong>，为你构建一座清澈透明的财富岛屿。
+                </p>
+
+                <div class="flex flex-wrap gap-4 pt-4">
+                    <a href="#" class="flex items-center gap-3 bg-gray-900 text-white px-8 py-4 rounded-2xl hover:scale-105 transition-transform shadow-xl shadow-gray-200">
+                        <i class="fa-brands fa-apple text-2xl"></i>
+                        <div class="text-left">
+                            <p class="text-[10px] text-gray-300 font-medium">Download on the</p>
+                            <p class="text-sm font-bold">App Store</p>
+                        </div>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 bg-white text-gray-900 border border-gray-200 px-8 py-4 rounded-2xl hover:bg-gray-50 transition hover:scale-105">
+                        <i class="fa-brands fa-android text-2xl text-green-500"></i>
+                        <div class="text-left">
+                            <p class="text-[10px] text-gray-400 font-medium">Get it on</p>
+                            <p class="text-sm font-bold">Google Play</p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="flex items-center gap-4 pt-4 text-sm text-gray-500 font-medium">
+                    <div class="flex -space-x-2">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-8 h-8 rounded-full border-2 border-white bg-gray-100" alt="">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka" class="w-8 h-8 rounded-full border-2 border-white bg-gray-100" alt="">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Zack" class="w-8 h-8 rounded-full border-2 border-white bg-gray-100" alt="">
+                    </div>
+                    <p>已有 50,000+ 岛民入住</p>
+                </div>
+            </div>
+
+            <div class="h-[800px] flex items-center justify-center relative" id="hero-tilt-container">
+                <div class="tilt-card relative w-[360px] h-[720px]" id="hero-phone">
+                    
+                    <div class="absolute top-[15%] -left-[15%] z-30 transform translate-z-20 float-anim">
+                        <div class="glass-strong p-4 rounded-2xl flex items-center gap-4 shadow-float w-64 border-l-4 border-indigo-500">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl"><i class="fa-solid fa-wallet"></i></div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-bold uppercase">Net Worth</p>
+                                <p class="text-xl font-bold text-gray-800">¥ 124,500</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="absolute bottom-[20%] -right-[10%] z-30 transform translate-z-30 float-anim" style="animation-delay: 1.5s;">
+                        <div class="glass-strong p-4 rounded-2xl flex items-center gap-3 shadow-float w-56 border-l-4 border-red-400">
+                            <div class="w-10 h-10 rounded-full bg-black text-red-500 flex items-center justify-center text-lg"><i class="fa-brands fa-netflix"></i></div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-800">Netflix</p>
+                                <p class="text-xs text-red-500 font-bold">明日扣费 ¥39</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full h-full bg-white rounded-[50px] border-[8px] border-gray-900 shadow-2xl overflow-hidden relative z-20">
+                        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-7 bg-gray-900 rounded-b-2xl z-50"></div>
+                        
+                        <div class="w-full h-full bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col pt-16 px-6 relative">
+                            <div class="absolute top-20 right-[-20px] w-32 h-32 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-70"></div>
+                            <div class="absolute top-40 left-[-20px] w-32 h-32 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70"></div>
+
+                            <div class="relative z-10">
+                                <h2 class="text-2xl font-extrabold text-gray-800 mb-1">Hi, Alex 👋</h2>
+                                <p class="text-sm text-gray-400 mb-8">今天也是充满希望的一天 ✨</p>
+
+                                <div class="bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 mb-6">
+                                    <p class="text-indigo-100 text-xs font-medium mb-1">本月结余</p>
+                                    <h3 class="text-3xl font-bold mb-4">¥ 4,250.00</h3>
+                                    <div class="w-full bg-black/20 h-1.5 rounded-full overflow-hidden">
+                                        <div class="bg-white h-full w-[45%]"></div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div class="bg-white/60 backdrop-blur-md p-4 rounded-2xl flex justify-between items-center shadow-sm">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center"><i class="fa-solid fa-burger"></i></div>
+                                            <div><p class="font-bold text-gray-800 text-sm">Shake Shack</p><p class="text-xs text-gray-400">晚餐</p></div>
+                                        </div>
+                                        <span class="font-bold text-gray-800">- 85.00</span>
+                                    </div>
+                                    <div class="bg-white/60 backdrop-blur-md p-4 rounded-2xl flex justify-between items-center shadow-sm">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center"><i class="fa-solid fa-train-subway"></i></div>
+                                            <div><p class="font-bold text-gray-800 text-sm">地铁通勤</p><p class="text-xs text-gray-400">交通</p></div>
+                                        </div>
+                                        <span class="font-bold text-gray-800">- 5.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="absolute bottom-0 left-0 w-full bg-white/80 backdrop-blur-xl border-t border-gray-100 p-4 pb-8 flex justify-between px-8 text-gray-400 text-xl">
+                                <i class="fa-solid fa-house text-gray-800"></i>
+                                <i class="fa-solid fa-chart-pie"></i>
+                                <div class="w-12 h-12 bg-gray-900 rounded-full text-white flex items-center justify-center -mt-6 border-4 border-white shadow-lg"><i class="fa-solid fa-plus"></i></div>
+                                <i class="fa-solid fa-wallet"></i>
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="absolute -bottom-10 left-10 right-10 h-10 bg-black/20 blur-2xl rounded-[100%] z-0"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="py-24 bg-white/50 relative z-10">
+        <div class="container mx-auto px-6">
+            
+            <div class="flex flex-col md:flex-row items-center gap-16 mb-32 feature-block">
+                <div class="flex-1 order-2 md:order-1 relative">
+                    <div class="absolute inset-0 bg-blue-100 rounded-full filter blur-3xl opacity-50 transform -translate-x-10"></div>
+                    <div class="glass-strong rounded-[2.5rem] p-8 relative shadow-2xl transform rotate-[-2deg] hover:rotate-0 transition duration-500">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-gray-800">资金账户</h3>
+                            <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-plus"></i></div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm border border-gray-50">
+                                <div class="flex gap-4">
+                                    <div class="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center"><i class="fa-solid fa-building-columns"></i></div>
+                                    <div><p class="font-bold text-sm">招商银行</p><p class="text-xs text-gray-400">储蓄卡 • 8899</p></div>
+                                </div>
+                                <span class="font-bold">¥ 85,200</span>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm border border-gray-50">
+                                <div class="flex gap-4">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center"><i class="fa-brands fa-alipay text-lg"></i></div>
+                                    <div><p class="font-bold text-sm">支付宝</p><p class="text-xs text-gray-400">余额宝</p></div>
+                                </div>
+                                <span class="font-bold">¥ 42,300</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1 order-1 md:order-2 space-y-6">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center text-2xl mb-4"><i class="fa-solid fa-wallet"></i></div>
+                    <h2 class="text-4xl font-bold text-gray-900">资产全景，<br>尽在掌握。</h2>
+                    <p class="text-gray-500 text-lg leading-relaxed">
+                        告别在各个银行 App 之间切换的烦恼。浮岛通过直观的卡片设计，将您的储蓄、现金、负债整合在一处。看着数字增长，本身就是一种享受。
+                    </p>
+                    <ul class="space-y-3 text-gray-600 font-medium">
+                        <li class="flex items-center gap-3"><i class="fa-solid fa-check text-green-500"></i> 自动计算净资产</li>
+                        <li class="flex items-center gap-3"><i class="fa-solid fa-check text-green-500"></i> 支持信用卡/花呗负债管理</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row items-center gap-16 mb-32 feature-block">
+                <div class="flex-1 space-y-6">
+                    <div class="w-12 h-12 rounded-2xl bg-orange-100 text-orange-500 flex items-center justify-center text-2xl mb-4"><i class="fa-solid fa-bolt"></i></div>
+                    <h2 class="text-4xl font-bold text-gray-900">3 秒极速记账，<br>不打断生活。</h2>
+                    <p class="text-gray-500 text-lg leading-relaxed">
+                        我们优化了记账流程的每一个毫秒。无启动广告，无繁琐步骤。打开即记，选类即存。就像发一条微信一样简单。
+                    </p>
+                    <ul class="space-y-3 text-gray-600 font-medium">
+                        <li class="flex items-center gap-3"><i class="fa-solid fa-check text-green-500"></i> 智能分类预测</li>
+                        <li class="flex items-center gap-3"><i class="fa-solid fa-check text-green-500"></i> 自定义常用类别</li>
+                    </ul>
+                </div>
+                <div class="flex-1 relative">
+                     <div class="absolute inset-0 bg-orange-100 rounded-full filter blur-3xl opacity-50 transform translate-x-10"></div>
+                     <div class="glass-strong rounded-[2.5rem] p-8 relative shadow-2xl transform rotate-[2deg] hover:rotate-0 transition duration-500">
+                         <div class="flex justify-end mb-8">
+                             <div class="text-right">
+                                 <div class="flex items-center justify-end gap-2 text-gray-500 mb-1">
+                                     <div class="w-6 h-6 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center text-xs"><i class="fa-solid fa-utensils"></i></div>
+                                     <span class="text-sm">餐饮美食</span>
+                                 </div>
+                                 <div class="text-4xl font-bold text-gray-800">48.00</div>
+                             </div>
+                         </div>
+                         <div class="grid grid-cols-4 gap-3">
+                             <div class="aspect-square bg-gray-50 rounded-xl flex items-center justify-center text-xl font-bold text-gray-700 hover:bg-gray-200 transition">1</div>
+                             <div class="aspect-square bg-gray-50 rounded-xl flex items-center justify-center text-xl font-bold text-gray-700 hover:bg-gray-200 transition">2</div>
+                             <div class="aspect-square bg-gray-50 rounded-xl flex items-center justify-center text-xl font-bold text-gray-700 hover:bg-gray-200 transition">3</div>
+                             <div class="bg-gray-100 rounded-xl flex items-center justify-center text-gray-500 hover:bg-red-50 hover:text-red-500 transition"><i class="fa-solid fa-delete-left"></i></div>
+                             
+                             <div class="aspect-square bg-gray-50 rounded-xl flex items-center justify-center text-xl font-bold text-gray-700 hover:bg-gray-200 transition">4</div>
+                             <div class="aspect-square bg-gray-50 rounded-xl flex items-center justify-center text-xl font-bold text-gray-700 hover:bg-gray-200 transition">5</div>
+                             <div class="aspect-square bg-gray-50 rounded-xl flex items-center justify-center text-xl font-bold text-gray-700 hover:bg-gray-200 transition">6</div>
+                             <div class="row-span-2 bg-gray-900 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-lg hover:bg-gray-800 transition">完成</div>
+                             
+                             <div class="aspect-square bg-gray-50 rounded-xl flex items-center justify-center text-xl font-bold text-gray-700 hover:bg-gray-200 transition">7</div>
+                             <div class="aspect-square bg-gray-50 rounded-xl flex items-center justify-center text-xl font-bold text-gray-700 hover:bg-gray-200 transition">8</div>
+                             <div class="aspect-square bg-gray-50 rounded-xl flex items-center justify-center text-xl font-bold text-gray-700 hover:bg-gray-200 transition">9</div>
+                         </div>
+                     </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="py-20 relative">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="text-indigo-600 font-bold tracking-wider uppercase text-xs mb-2 block">Why Float Island?</span>
+                <h2 class="text-4xl font-bold text-gray-900">不仅好看，<br>更是强大的财务中台</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-6 h-auto md:h-[600px]">
+                
+                <div class="md:col-span-2 md:row-span-2 glass-strong rounded-[2rem] p-8 group hover:shadow-glass transition duration-300 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-purple-100 rounded-full filter blur-3xl opacity-60"></div>
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center text-2xl mb-6"><i class="fa-solid fa-bell"></i></div>
+                        <h3 class="text-2xl font-bold mb-2">订阅雷达</h3>
+                        <p class="text-gray-500 mb-8 max-w-sm">别再为忘记取消的会员付费。Float 会在扣费前 24 小时贴心提醒，让你的每一分钱都花在刀刃上。</p>
+                        
+                        <div class="space-y-3">
+                            <div class="bg-white p-3 rounded-xl flex items-center justify-between border-l-4 border-red-500 shadow-sm transform group-hover:translate-x-2 transition">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-black text-red-600 flex items-center justify-center text-xs"><i class="fa-brands fa-netflix"></i></div>
+                                    <div class="text-sm font-bold text-gray-800">Netflix</div>
+                                </div>
+                                <div class="text-xs text-red-500 font-bold bg-red-50 px-2 py-1 rounded">明天到期</div>
+                            </div>
+                             <div class="bg-white p-3 rounded-xl flex items-center justify-between border-l-4 border-green-500 shadow-sm transform group-hover:translate-x-2 transition delay-75">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-green-100 text-green-600 flex items-center justify-center text-xs"><i class="fa-brands fa-spotify"></i></div>
+                                    <div class="text-sm font-bold text-gray-800">Spotify</div>
+                                </div>
+                                <div class="text-xs text-gray-400">3天后</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-strong rounded-[2rem] p-6 flex flex-col justify-between group hover:bg-white transition">
+                    <div class="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center text-lg"><i class="fa-solid fa-file-excel"></i></div>
+                    <div>
+                        <h3 class="font-bold text-lg mb-1">自由导出</h3>
+                        <p class="text-xs text-gray-400">一键生成 Excel / PDF 报表，数据掌握在自己手中。</p>
+                    </div>
+                    <div class="absolute right-4 top-4 opacity-0 group-hover:opacity-100 transition transform group-hover:rotate-45 text-green-500"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+                </div>
+
+                <div class="glass-strong rounded-[2rem] p-6 flex flex-col justify-between group hover:bg-white transition">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg"><i class="fa-solid fa-cloud"></i></div>
+                    <div>
+                        <h3 class="font-bold text-lg mb-1">iCloud 同步</h3>
+                        <p class="text-xs text-gray-400">iPhone, iPad, Mac 无缝切换，数据实时更新。</p>
+                    </div>
+                </div>
+
+                <div class="glass-strong rounded-[2rem] p-6 flex items-center gap-4 md:col-span-1 group hover:bg-white transition">
+                     <div class="w-14 h-14 rounded-full border-2 border-gray-200 flex items-center justify-center text-2xl text-gray-400 group-hover:text-indigo-600 group-hover:border-indigo-600 transition"><i class="fa-solid fa-face-smile"></i></div>
+                     <div>
+                         <h3 class="font-bold text-lg">Face ID 隐私锁</h3>
+                         <p class="text-xs text-gray-400 mt-1">本地加密存储，你的数据只属于你。</p>
+                     </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="reviews" class="py-20 bg-white border-t border-gray-100">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-16">听听岛民们怎么说</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-gray-50 p-8 rounded-3xl hover:bg-white hover:shadow-xl transition duration-300">
+                    <div class="flex items-center gap-1 text-yellow-400 mb-4 text-xs">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-gray-600 italic mb-6">"终于找到了一款不臃肿的记账软件。界面太美了，每次打开都是一种享受，让我重新爱上了记账。"</p>
+                    <div class="flex items-center gap-3">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lily" class="w-10 h-10 rounded-full" alt="">
+                        <div><p class="font-bold text-sm">Lily Chen</p><p class="text-xs text-gray-400">UI 设计师</p></div>
+                    </div>
+                </div>
+                 <div class="bg-gray-50 p-8 rounded-3xl hover:bg-white hover:shadow-xl transition duration-300 transform md:-translate-y-4">
+                    <div class="flex items-center gap-1 text-yellow-400 mb-4 text-xs">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-gray-600 italic mb-6">"订阅管理功能帮我省了不少钱！发现了很多忘记取消的自动续费。资产全景功能也很赞。"</p>
+                    <div class="flex items-center gap-3">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Mike" class="w-10 h-10 rounded-full" alt="">
+                        <div><p class="font-bold text-sm">Mike Wang</p><p class="text-xs text-gray-400">产品经理</p></div>
+                    </div>
+                </div>
+                 <div class="bg-gray-50 p-8 rounded-3xl hover:bg-white hover:shadow-xl transition duration-300">
+                    <div class="flex items-center gap-1 text-yellow-400 mb-4 text-xs">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-gray-600 italic mb-6">"极简主义者的福音。没有广告，没有理财推销，只有纯粹的记账。希望开发团队保持初心。"</p>
+                    <div class="flex items-center gap-3">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" class="w-10 h-10 rounded-full" alt="">
+                        <div><p class="font-bold text-sm">Sarah Li</p><p class="text-xs text-gray-400">自由职业者</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq" class="py-20">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <h2 class="text-3xl font-bold mb-12 text-center">常见问题</h2>
+            
+            <div class="space-y-4">
+                <div class="glass p-6 rounded-2xl cursor-pointer group">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-gray-800">数据安全吗？会上传服务器吗？</h4>
+                        <i class="fa-solid fa-chevron-down text-gray-400 group-hover:text-indigo-600 transition"></i>
+                    </div>
+                    <p class="text-gray-500 text-sm mt-3 hidden group-hover:block transition-all">浮岛采用本地优先策略。未开启同步时，数据仅保存在您的手机中。开启 iCloud 同步后，数据加密存储于 Apple 的服务器，我们无法访问您的任何隐私数据。</p>
+                </div>
+
+                <div class="glass p-6 rounded-2xl cursor-pointer group">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-gray-800">支持导入其他软件的账单吗？</h4>
+                        <i class="fa-solid fa-chevron-down text-gray-400 group-hover:text-indigo-600 transition"></i>
+                    </div>
+                    <p class="text-gray-500 text-sm mt-3 hidden group-hover:block transition-all">支持。我们提供了标准 Excel 模板，您可以将其他软件的数据整理后一键导入。</p>
+                </div>
+
+                 <div class="glass p-6 rounded-2xl cursor-pointer group">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-gray-800">是免费的吗？</h4>
+                        <i class="fa-solid fa-chevron-down text-gray-400 group-hover:text-indigo-600 transition"></i>
+                    </div>
+                    <p class="text-gray-500 text-sm mt-3 hidden group-hover:block transition-all">基础记账功能永久免费。高级功能（如无限资产账户、订阅雷达、导出功能）需要订阅 Float Pro 会员。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-900 text-white pt-20 pb-10">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-16">
+                <div class="text-center md:text-left mb-8 md:mb-0">
+                    <h2 class="text-3xl font-bold mb-2">Ready to Float?</h2>
+                    <p class="text-gray-400">即刻下载，构建你的财富岛屿。</p>
+                </div>
+                <div class="flex gap-4">
+                    <button class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white hover:text-black transition"><i class="fa-brands fa-weixin"></i></button>
+                    <button class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white hover:text-black transition"><i class="fa-brands fa-weibo"></i></button>
+                    <button class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white hover:text-black transition"><i class="fa-solid fa-envelope"></i></button>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+                <p>&copy; 2025 Float Island Inc. All rights reserved.</p>
+                <div class="flex gap-6 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-white transition">隐私协议</a>
+                    <a href="#" class="hover:text-white transition">使用条款</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 1. Hero 3D Tilt Effect (针对浅色背景优化)
+        const tiltContainer = document.getElementById('hero-tilt-container');
+        const phone = document.getElementById('hero-phone');
+        
+        tiltContainer.addEventListener('mousemove', (e) => {
+            const rect = tiltContainer.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            
+            gsap.to(phone, {
+                rotationY: x * 15, // 旋转幅度
+                rotationX: -y * 15,
+                duration: 0.5,
+                ease: 'power2.out',
+                transformPerspective: 1000
+            });
+            
+            // 浮动元素视差
+            gsap.to('.float-anim', {
+                x: -x * 30,
+                y: -y * 30,
+                duration: 0.5,
+                ease: 'power2.out'
+            });
+        });
+
+        tiltContainer.addEventListener('mouseleave', () => {
+            gsap.to(phone, { rotationY: 0, rotationX: 0, duration: 1, ease: 'elastic.out(1, 0.5)' });
+            gsap.to('.float-anim', { x: 0, y: 0, duration: 1 });
+        });
+
+        // 2. 元素入场动画
+        gsap.utils.toArray('.feature-block').forEach(block => {
+            gsap.from(block, {
+                scrollTrigger: {
+                    trigger: block,
+                    start: "top 80%",
+                },
+                y: 50,
+                opacity: 0,
+                duration: 1,
+                ease: "power3.out"
+            });
+        });
+
+    </script>
+</body>
+</html>
