@@ -191,7 +191,7 @@ const formatCurrency = (amount) => {
     </div>
 
     <!-- Account List -->
-    <div class="px-6 pb-24 relative z-10">
+    <div class="px-6 pb-32 relative z-10">
       <div v-if="loading && accounts.length === 0" class="text-center py-12">
         <i class="fa-solid fa-spinner fa-spin text-3xl text-gray-400"></i>
         <p class="text-gray-400 mt-3">加载中...</p>

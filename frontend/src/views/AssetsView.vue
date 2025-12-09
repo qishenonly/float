@@ -181,7 +181,7 @@ const saveAccount = async () => {
       <p class="text-xs text-gray-400 mt-1">财富积累是一个美好的过程</p>
     </div>
 
-    <div class="px-6 pb-24">
+    <div class="px-6 pb-32">
       <!-- Net Worth Card -->
       <div class="relative overflow-hidden rounded-[2rem] p-6 text-white shadow-xl shadow-indigo-200/50 mb-8 animate-enter delay-100 group active-press">
         <div class="absolute inset-0 bg-gradient-to-br from-[#4e54c8] to-[#8f94fb] z-0"></div>

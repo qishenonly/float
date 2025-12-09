@@ -42,7 +42,7 @@ const showFeature = (feature) => {
       </div>
 
       <!-- Active Plans -->
-      <div class="space-y-4 pb-8 animate-enter delay-200">
+      <div class="space-y-4 pb-32 animate-enter delay-200">
         <h3 class="font-bold text-gray-800 px-2">正在进行</h3>
         
         <div class="glass-card p-5 rounded-3xl flex items-center gap-4 active-press">

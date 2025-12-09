@@ -68,7 +68,7 @@ const router = useRouter()
       </div>
 
       <!-- Daily Transactions -->
-      <div class="pb-8 animate-enter delay-200">
+      <div class="pb-32 animate-enter delay-200">
         <div class="flex justify-between items-end mb-4 px-2">
           <h3 class="font-bold text-gray-800">12月3日</h3>
           <span class="text-sm font-bold text-gray-800">- ¥ 129.00</span>

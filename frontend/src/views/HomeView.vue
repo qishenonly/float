@@ -206,7 +206,7 @@ const getBudgetPercentage = () => {
     </div>
 
     <!-- Recent Transactions -->
-    <div class="px-6 mt-8 animate-enter delay-300">
+    <div class="px-6 mt-8 pb-32 animate-enter delay-300">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-bold text-gray-800">今日动态</h3>
         <button class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-400 shadow-sm hover:text-gray-800 active-press">

@@ -70,7 +70,7 @@ const handleUpdateClick = () => {
       <div class="w-10"></div> <!-- Placeholder for balance -->
     </div>
 
-    <div class="px-6 pb-20 space-y-6 animate-enter delay-100">
+    <div class="px-6 pb-32 space-y-6 animate-enter delay-100">
       
       <!-- Personalization -->
       <div>

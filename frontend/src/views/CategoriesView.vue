@@ -191,7 +191,7 @@ const closeModal = () => {
     </div>
 
     <!-- Category List -->
-    <div v-else class="px-6 pb-8 relative z-10">
+    <div v-else class="px-6 pb-32 relative z-10">
       <p class="text-xs text-gray-400 mb-4 px-2">系统分类不可编辑/删除</p>
       
       <div class="space-y-3 animate-enter delay-200">

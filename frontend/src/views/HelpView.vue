@@ -73,7 +73,7 @@ const handleSocial = (platform) => {
       <div class="w-10"></div>
     </div>
 
-    <div class="flex-1 overflow-y-auto hide-scrollbar px-6 relative z-10 pb-8">
+    <div class="flex-1 overflow-y-auto hide-scrollbar px-6 relative z-10 pb-32">
       
       <!-- Search -->
       <div class="glass-card px-4 py-3 rounded-2xl flex items-center gap-3 mb-8 text-gray-500 shadow-sm focus-within:ring-2 ring-indigo-200 transition animate-enter delay-100">

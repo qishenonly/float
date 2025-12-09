@@ -167,7 +167,7 @@ const getDailySummary = (transactions) => {
     </div>
 
     <!-- Content -->
-    <div class="px-6 pb-24 flex-1">
+    <div class="px-6 pb-32 flex-1">
       <div v-if="loading" class="py-12 text-center">
         <i class="fa-solid fa-spinner fa-spin text-gray-400 text-2xl"></i>
         <p class="text-gray-400 text-sm mt-2">加载中...</p>

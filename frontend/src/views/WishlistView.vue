@@ -23,7 +23,7 @@ const showFeature = (feature) => {
       </button>
     </div>
 
-    <div class="px-6 pb-8 relative z-10 space-y-6">
+    <div class="px-6 pb-32 relative z-10 space-y-6">
       
       <!-- Summary -->
       <div class="text-center py-4 animate-enter delay-100">

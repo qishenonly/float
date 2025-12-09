@@ -45,7 +45,7 @@ const showFeature = (feature) => {
 
       <!-- Upcoming Bills -->
       <h3 class="font-bold text-gray-800 mb-4 animate-enter delay-200">即将扣费</h3>
-      <div class="space-y-3 pb-8 animate-enter delay-300">
+      <div class="space-y-3 pb-32 animate-enter delay-300">
         
         <div class="glass-card p-4 rounded-2xl flex items-center justify-between border-l-4 border-l-red-400 active-press">
           <div class="flex items-center gap-3">
