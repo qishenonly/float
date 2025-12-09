@@ -229,7 +229,7 @@ const closeModal = () => {
     </div>
 
     <!-- Add/Edit Modal -->
-    <div v-if="showModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6" @click.self="closeModal">
+    <div v-if="showModal" class="absolute inset-0 bg-black/50 z-50 flex items-center justify-center p-6" @click.self="closeModal">
       <div class="bg-white rounded-3xl w-full max-w-md p-6 space-y-4 animate-enter">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-bold">{{ editingCategory ? '编辑分类' : '新建分类' }}</h2>

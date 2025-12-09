@@ -3,7 +3,7 @@ import { RouterLink } from 'vue-router';
 </script>
 
 <template>
-  <div class="absolute bottom-0 w-full bg-white/80 backdrop-blur-xl border-t border-white/50 px-6 py-4 pb-8 z-20">
+  <div class="absolute bottom-0 w-full bg-white/80 backdrop-blur-xl border-t border-white/50 px-6 py-4 pb-6 z-20">
     <div class="flex justify-between items-center relative">
       <RouterLink to="/" class="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-900 transition active-press" active-class="!text-gray-900">
         <i class="fa-solid fa-house text-xl drop-shadow-sm"></i>

@@ -240,8 +240,8 @@ const formatCurrency = (amount) => {
     </div>
 
     <!-- Add/Edit Modal -->
-    <div v-if="showModal" class="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center sm:p-6" @click.self="closeModal">
-      <div class="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 pb-24 space-y-5 animate-slide-up sm:animate-enter max-h-[90vh] overflow-y-auto">
+    <div v-if="showModal" class="absolute inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center sm:p-6" @click.self="closeModal">
+      <div class="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 space-y-5 animate-slide-up sm:animate-enter max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between sticky top-0 bg-white z-10 pb-2">
           <h2 class="text-lg font-bold text-gray-800">{{ editingAccount ? '编辑账户' : '添加账户' }}</h2>
           <button @click="closeModal" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
@@ -250,7 +250,7 @@ const formatCurrency = (amount) => {
         </div>
 
         <!-- Form -->
-        <div class="space-y-4">
+        <div class="space-y-4 pb-24">
           <!-- Account Type -->
           <div>
             <label class="block text-sm font-medium text-gray-600 mb-2">账户类型</label>

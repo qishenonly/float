@@ -86,7 +86,7 @@ const showComingSoon = (feature) => {
     </div>
 
     <!-- Menu List -->
-    <div class="px-6 py-2 relative z-10">
+    <div class="px-6 py-2 relative z-10 pb-32">
       <GlassCard class="rounded-2xl shadow-sm overflow-hidden mb-6 animate-enter delay-100">
         <div class="divide-y divide-gray-100/50">
             <!-- <div @click="router.push('/accounts')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition group active-press">
