@@ -66,10 +66,10 @@ func (s *transactionService) CreateTransaction(userID int64, req *request.Create
 		}
 	}
 
-	// 验证分类
+	// 验证分类（系统分类user_id为0，不需要匹配）
 	if req.CategoryID != nil {
 		category, err := s.categoryRepo.FindByID(*req.CategoryID)
-		if err != nil || category.UserID != userID {
+		if err != nil || (category.UserID != userID && category.UserID != 0) {
 			return nil, errors.New("invalid category")
 		}
 	}

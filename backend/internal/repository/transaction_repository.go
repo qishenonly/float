@@ -91,11 +91,11 @@ func (r *transactionRepository) FindByUserID(userID int64, filters *request.List
 	}
 
 	if !filters.StartDate.IsZero() {
-		query = query.Where("transaction_date >= ?", filters.StartDate)
+		query = query.Where("DATE(transaction_date) >= ?", filters.StartDate.Format("2006-01-02"))
 	}
 
 	if !filters.EndDate.IsZero() {
-		query = query.Where("transaction_date <= ?", filters.EndDate)
+		query = query.Where("DATE(transaction_date) <= ?", filters.EndDate.Format("2006-01-02"))
 	}
 
 	if filters.SearchKeyword != "" {
@@ -208,11 +208,11 @@ func (r *transactionRepository) GetTotalBalance(userID int64, filters *request.L
 	}
 
 	if !filters.StartDate.IsZero() {
-		query = query.Where("transaction_date >= ?", filters.StartDate)
+		query = query.Where("DATE(transaction_date) >= ?", filters.StartDate.Format("2006-01-02"))
 	}
 
 	if !filters.EndDate.IsZero() {
-		query = query.Where("transaction_date <= ?", filters.EndDate)
+		query = query.Where("DATE(transaction_date) <= ?", filters.EndDate.Format("2006-01-02"))
 	}
 
 	// 注意：这里返回的不是真实的Transaction对象，而是统计结果

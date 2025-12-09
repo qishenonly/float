@@ -71,13 +71,7 @@ const loadData = async () => {
       }
     }
 
-    // Mock transfer categories
-    transferCategories.value = [
-      { id: 1, name: "存钱", icon: "fa-piggy-bank", color: "blue" },
-      { id: 2, name: "还款", icon: "fa-money-bill-transfer", color: "red" },
-      { id: 3, name: "借出", icon: "fa-hand-holding-dollar", color: "gray" },
-      { id: 4, name: "给家人", icon: "fa-users", color: "pink" },
-    ];
+
   } catch (error) {
     console.error("Failed to load data:", error);
     showToast("加载数据失败", "error");
@@ -200,14 +194,14 @@ const handleSave = async () => {
   loading.value = true;
   try {
     const payload = {
-      type: type.value,
-      category_id: selectedCategory.value.id,
-      amount: parseFloat(amount.value),
-      currency: "CNY",
-      title: selectedCategory.value.name,
-      description: description.value,
-      transaction_date: date.value,
-    };
+       type: type.value,
+       category_id: selectedCategory.value.id,
+       amount: parseFloat(amount.value),
+       currency: "CNY",
+       title: selectedCategory.value.name,
+       description: description.value,
+       transaction_date: `${date.value}T00:00:00Z`,
+     };
 
     // 根据交易类型填充不同字段
     if (type.value === "transfer") {
