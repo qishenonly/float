@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { accountAPI } from '@/api/account'
 import { useToast } from '../composables/useToast'
 import GlassCard from '../components/GlassCard.vue'
@@ -22,16 +22,16 @@ const formData = ref({
 })
 
 const fundAccountTypes = [
-  { value: 'bank', label: '银行卡', icon: 'fa-building-columns' },
-  { value: 'alipay', label: '支付宝', icon: 'fa-alipay' },
-  { value: 'wechat', label: '微信', icon: 'fa-weixin' },
-  { value: 'cash', label: '现金', icon: 'fa-money-bill' },
-  { value: 'other', label: '其他', icon: 'fa-wallet' }
+  { value: 'bank', label: '银行卡', icon: 'fa-building-columns text-pink-500 text-sm' },
+  { value: 'alipay', label: '支付宝', icon: 'fa-brands fa-alipay text-blue-500 text-sm' },
+  { value: 'wechat', label: '微信', icon: 'fa-brands fa-weixin text-green-500 text-sm' },
+  { value: 'cash', label: '现金', icon: 'fa-money-bill text-red-500 text-sm' },
+  { value: 'other', label: '其他', icon: 'fa-wallet text-violet-500 text-sm' }
 ]
 
 const creditAccountTypes = [
-  { value: 'credit', label: '信用卡', icon: 'fa-credit-card' },
-  { value: 'other', label: '花呗/白条', icon: 'fa-face-smile' } // Using 'other' or maybe we should add more types later. For now map 'credit' to Credit Card.
+  { value: 'credit', label: '信用卡', icon: 'fa-solid fa-credit-card text-red-500 text-sm' },
+  { value: 'other', label: '花呗/白条', icon: 'fa-solid fa-face-smile text-indigo-500 text-sm' } // Using 'other' or maybe we should add more types later. For now map 'credit' to Credit Card.
 ]
 
 // For the modal, we need to show appropriate types
@@ -46,6 +46,14 @@ const availableColors = [
 
 onMounted(() => {
   loadData()
+})
+
+// When account type changes, update icon accordingly
+watch(() => formData.value.account_type, (newType) => {
+  const accountTypeObj = currentAccountTypes.value.find(t => t.value === newType)
+  if (accountTypeObj) {
+    formData.value.icon = accountTypeObj.icon
+  }
 })
 
 const loadData = async () => {
@@ -110,12 +118,15 @@ const formatNumber = (num) => {
 // Modal Logic
 const openAddModal = (type) => {
   modalType.value = type
+  const defaultType = type === 'fund' ? 'bank' : 'credit'
+  const accountTypeObj = currentAccountTypes.value.find(t => t.value === defaultType)
+  
   formData.value = {
-    account_type: type === 'fund' ? 'bank' : 'credit',
+    account_type: defaultType,
     account_name: '',
     account_number: '',
     initial_balance: '',
-    icon: type === 'fund' ? 'fa-building-columns' : 'fa-credit-card',
+    icon: accountTypeObj?.icon || 'fa-solid fa-wallet',
     color: 'blue',
     include_in_total: true
   }
@@ -289,7 +300,7 @@ const saveAccount = async () => {
               <button
                 v-for="type in currentAccountTypes"
                 :key="type.value"
-                @click="formData.account_type = type.value"
+                @click="formData.account_type = type.value; formData.icon = type.icon"
                 :class="formData.account_type === type.value ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'"
                 class="py-2.5 rounded-xl text-sm font-medium transition flex flex-col items-center gap-1"
               >
