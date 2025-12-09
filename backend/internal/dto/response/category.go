@@ -5,6 +5,7 @@ import "time"
 // CategoryResponse 分类响应
 type CategoryResponse struct {
 	ID           int64     `json:"id"`
+	UserID       int64     `json:"user_id"`
 	Type         string    `json:"type"`
 	Name         string    `json:"name"`
 	Icon         string    `json:"icon"`

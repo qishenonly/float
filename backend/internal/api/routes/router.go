@@ -46,14 +46,19 @@ func SetupRouter() *gin.Engine {
 			}
 
 			// 交易记录
+			transactionHandler := handlers.NewTransactionHandler()
 			transactions := authorized.Group("/transactions")
 			{
-				transactions.GET("", handlers.GetTransactions)
-				transactions.POST("", handlers.CreateTransaction)
-				transactions.GET("/:id", handlers.GetTransaction)
-				transactions.PUT("/:id", handlers.UpdateTransaction)
-				transactions.DELETE("/:id", handlers.DeleteTransaction)
-				transactions.GET("/stats", handlers.GetTransactionStats)
+				transactions.GET("", transactionHandler.ListTransactions)
+				transactions.POST("", transactionHandler.CreateTransaction)
+				transactions.POST("/batch", transactionHandler.CreateBatchTransactions)
+				transactions.GET("/statistics", transactionHandler.GetTransactionStatistics)
+				transactions.GET("/monthly-statistics", transactionHandler.GetMonthlyStatistics)
+				transactions.GET("/category-statistics", transactionHandler.GetCategoryStatistics)
+				transactions.GET("/:id", transactionHandler.GetTransaction)
+				transactions.PUT("/:id", transactionHandler.UpdateTransaction)
+				transactions.DELETE("/:id", transactionHandler.DeleteTransaction)
+				transactions.DELETE("/batch", transactionHandler.DeleteBatchTransactions)
 			}
 
 			// 账户管理

@@ -5,6 +5,7 @@ import "time"
 // AccountResponse 账户响应
 type AccountResponse struct {
 	ID             int64     `json:"id"`
+	UserID         int64     `json:"user_id"`
 	AccountType    string    `json:"account_type"`
 	AccountName    string    `json:"account_name"`
 	AccountNumber  string    `json:"account_number"`
