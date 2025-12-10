@@ -15,6 +15,7 @@ import (
 	"github.com/qiuhaonan/float-backend/internal/models"
 	"github.com/qiuhaonan/float-backend/pkg/cache"
 	"github.com/qiuhaonan/float-backend/pkg/database"
+	"github.com/qiuhaonan/float-backend/pkg/email"
 	"github.com/qiuhaonan/float-backend/pkg/logger"
 	"github.com/spf13/viper"
 )
@@ -52,6 +53,11 @@ func main() {
 		logger.Fatal("Failed to initialize Redis:", err)
 	}
 	defer cache.Close()
+
+	// 初始化邮件服务
+	if err := email.Init(); err != nil {
+		logger.Warn("Failed to initialize email service:", err)
+	}
 
 	// 设置 Gin 模式
 	if viper.GetString("app.mode") == "release" {

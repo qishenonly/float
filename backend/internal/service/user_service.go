@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/qiuhaonan/float-backend/internal/dto/request"
@@ -9,11 +10,14 @@ import (
 	"github.com/qiuhaonan/float-backend/internal/models"
 	"github.com/qiuhaonan/float-backend/internal/repository"
 	"github.com/qiuhaonan/float-backend/internal/utils"
+	"github.com/qiuhaonan/float-backend/pkg/email"
+	"github.com/qiuhaonan/float-backend/pkg/logger"
 	"github.com/spf13/viper"
 )
 
 // UserService 用户服务接口
 type UserService interface {
+	SendVerificationCode(req *request.SendVerificationCodeRequest) error
 	Register(req *request.RegisterRequest) (*response.AuthResponse, error)
 	Login(req *request.LoginRequest) (*response.AuthResponse, error)
 	RefreshToken(refreshToken string) (*response.TokenResponse, error)
@@ -34,8 +38,47 @@ func NewUserService() UserService {
 	}
 }
 
+// SendVerificationCode 发送邮箱验证码
+func (s *userService) SendVerificationCode(req *request.SendVerificationCodeRequest) error {
+	// 注意：这里不检查邮箱是否已注册，仅生成和发送验证码
+	// 注册时才进行邮箱重复检查
+	// 这样可以快速响应用户请求，提供更好的用户体验
+
+	// 生成验证码
+	code, err := email.GenerateVerificationCode()
+	if err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][验证码] 生成失败 | 邮箱: %s | 错误: %v", req.Email, err))
+		return errors.New("生成验证码失败")
+	}
+
+	// 存储验证码到 Redis
+	if err := email.StoreVerificationCode(req.Email, code); err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][验证码] 存储失败 | 邮箱: %s | 错误: %v", req.Email, err))
+		return errors.New("存储验证码失败")
+	}
+
+	// 发送邮件
+	emailService := email.GetService()
+	if err := emailService.SendVerificationCode(req.Email, code); err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][验证码] 发送失败 | 邮箱: %s | 错误: %v", req.Email, err))
+		return errors.New("发送验证码邮件失败")
+	}
+
+	logger.Info(fmt.Sprintf("[用户服务][验证码] 已发送 | 邮箱: %s", req.Email))
+	return nil
+}
+
 // Register 用户注册
 func (s *userService) Register(req *request.RegisterRequest) (*response.AuthResponse, error) {
+	// 验证邮箱验证码
+	verified, err := email.VerifyCode(req.Email, req.VerificationCode)
+	if err != nil {
+		return nil, errors.New("验证码验证失败，请重试")
+	}
+	if !verified {
+		return nil, errors.New("验证码错误或已过期")
+	}
+
 	// 检查用户名是否已存在
 	existingUser, _ := s.userRepo.FindByUsername(req.Username)
 	if existingUser != nil {

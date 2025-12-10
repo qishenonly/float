@@ -10,7 +10,34 @@ make run
 
 服务地址：`http://localhost:8080`
 
-## 1. 用户注册
+## 1. 发送邮箱验证码
+
+**POST** `/api/v1/auth/send-verification-code`
+
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/send-verification-code \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com"
+  }'
+```
+
+**响应示例：**
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "message": "验证码已发送，请检查邮箱"
+  }
+}
+```
+
+**错误响应：**
+- 邮箱已被注册：`{"code": 400, "message": "该邮箱已被注册"}`
+- 邮件发送失败：`{"code": 400, "message": "发送验证码邮件失败"}`
+
+## 2. 用户注册
 
 **POST** `/api/v1/auth/register`
 
@@ -21,7 +48,8 @@ curl -X POST http://localhost:8080/api/v1/auth/register \
     "username": "testuser",
     "email": "test@example.com",
     "password": "Test123456",
-    "display_name": "Test User"
+    "display_name": "Test User",
+    "verification_code": "123456"
   }'
 ```
 
@@ -42,7 +70,7 @@ curl -X POST http://localhost:8080/api/v1/auth/register \
 }
 ```
 
-## 2. 用户登录
+## 3. 用户登录
 
 **POST** `/api/v1/auth/login`
 
@@ -55,7 +83,7 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
   }'
 ```
 
-## 3. 刷新Token
+## 4. 刷新Token
 
 **POST** `/api/v1/auth/refresh`
 
@@ -79,7 +107,7 @@ curl -X POST http://localhost:8080/api/v1/auth/refresh \
 }
 ```
 
-## 4. 获取当前用户信息
+## 5. 获取当前用户信息
 
 **GET** `/api/v1/users/me`
 
@@ -112,7 +140,7 @@ curl -X GET http://localhost:8080/api/v1/users/me \
 }
 ```
 
-## 5. 更新用户信息
+## 6. 更新用户信息
 
 **PUT** `/api/v1/users/me`
 
@@ -127,7 +155,7 @@ curl -X PUT http://localhost:8080/api/v1/users/me \
   }'
 ```
 
-## 6. 修改密码
+## 7. 修改密码
 
 **PUT** `/api/v1/users/me/password`
 
@@ -141,7 +169,7 @@ curl -X PUT http://localhost:8080/api/v1/users/me/password \
   }'
 ```
 
-## 7. 获取用户统计
+## 8. 获取用户统计
 
 **GET** `/api/v1/users/me/stats`
 
@@ -197,9 +225,39 @@ curl -X GET http://localhost:8080/api/v1/users/me/stats \
 }
 ```
 
+## 邮箱验证说明
+
+### 配置网易126邮箱
+
+1. 在 `config/config.yaml` 中配置邮件服务：
+   ```yaml
+   email:
+     enabled: true
+     verification_code_expiry: 10  # 验证码有效期（分钟）
+     smtp:
+       host: "smtp.126.com"
+       port: "587"  # 或 465 (SSL)
+       username: "your-email@126.com"
+       password: "your-auth-code"  # 使用授权码，不是邮箱密码
+       from: "your-email@126.com"
+   ```
+
+2. 获取网易126邮箱授权码：
+   - 登录网易126邮箱
+   - 进入 设置 > 账户 > POP3/SMTP服务
+   - 启用 POP3/SMTP/IMAP 服务
+   - 获取授权码
+
+3. 若邮件服务未配置，系统会在控制台输出验证码进行测试
+
 ## 测试检查清单
 
-- [ ] 注册新用户成功
+- [ ] 发送邮箱验证码成功
+- [ ] 重复邮箱发送验证码失败
+- [ ] 验证码邮件能正常接收
+- [ ] 验证码已过期时注册失败
+- [ ] 验证码错误时注册失败
+- [ ] 验证码正确时注册成功
 - [ ] 重复用户名注册失败
 - [ ] 重复邮箱注册失败
 - [ ] 登录成功并获取Token

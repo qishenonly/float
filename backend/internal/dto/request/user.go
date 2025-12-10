@@ -1,12 +1,18 @@
 package request
 
+// SendVerificationCodeRequest 发送验证码请求
+type SendVerificationCodeRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
 // RegisterRequest 注册请求
 type RegisterRequest struct {
-	Username    string `json:"username" binding:"required,min=3,max=50"`
-	Email       string `json:"email" binding:"required,email"`
-	Phone       string `json:"phone" binding:"omitempty,min=11,max=20"`
-	Password    string `json:"password" binding:"required,min=6,max=32"`
-	DisplayName string `json:"display_name" binding:"omitempty,max=50"`
+	Username             string `json:"username" binding:"required,min=3,max=50"`
+	Email                string `json:"email" binding:"required,email"`
+	Phone                string `json:"phone" binding:"omitempty,min=11,max=20"`
+	Password             string `json:"password" binding:"required,min=6,max=32"`
+	DisplayName          string `json:"display_name" binding:"omitempty,max=50"`
+	VerificationCode     string `json:"verification_code" binding:"required,len=6"`
 }
 
 // LoginRequest 登录请求

@@ -1,6 +1,6 @@
 app:
   name: "FloatIsland Backend"
-  version: "1.1.1"
+  version: "0.0.1"
   mode: "debug"  # debug/release
 
 server:
@@ -48,6 +48,18 @@ storage:
     secret_key: ""
     bucket_url: ""
     region: ""
+
+email:
+  enabled: false  # 默认关闭，需要配置后启用
+  verification_code_expiry: 10  # minutes
+  # SMTP 配置 - 网易126邮箱
+  smtp:
+    # 网易126邮箱 SMTP 地址和端口
+    host: "smtp.126.com"  # 或使用 smtp.126.com
+    port: "465"           # 或使用 465 (SSL)
+    username: ""          # 你的126邮箱地址，如: example@126.com
+    password: ""          # 邮箱密码或授权码
+    from: ""              # 发件人邮箱地址
 
 log:
   level: "info"  # debug/info/warn/error

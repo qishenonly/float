@@ -37,6 +37,23 @@ func HealthCheck(c *gin.Context) {
 	})
 }
 
+// SendVerificationCode 发送邮箱验证码
+func SendVerificationCode(c *gin.Context) {
+	var req dto_request.SendVerificationCodeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "请求参数错误: "+err.Error())
+		return
+	}
+
+	userService := service.NewUserService()
+	if err := userService.SendVerificationCode(&req); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(c, gin.H{"message": "验证码已发送，请检查邮箱"})
+}
+
 // Register 用户注册
 func Register(c *gin.Context) {
 	var req dto_request.RegisterRequest

@@ -27,6 +27,7 @@ func SetupRouter() *gin.Engine {
 		// 认证路由（公开）
 		auth := v1.Group("/auth")
 		{
+			auth.POST("/send-verification-code", handlers.SendVerificationCode)
 			auth.POST("/register", handlers.Register)
 			auth.POST("/login", handlers.Login)
 			auth.POST("/refresh", handlers.RefreshToken)
