@@ -29,6 +29,24 @@ func main() {
 	// 初始化日志
 	logger.Init()
 
+	// 打印所有环境变量和配置（用于调试）
+	logger.Info("========== OS Environment Variables ==========")
+	for _, env := range os.Environ() {
+		logger.Info(env)
+	}
+	logger.Info("=========== Viper Config (from file/env) ===========")
+	logger.Infof("Config File Used: %s", viper.ConfigFileUsed())
+	for key, value := range viper.AllSettings() {
+		if mapVal, ok := value.(map[string]interface{}); ok {
+			for subKey, subValue := range mapVal {
+				logger.Infof("%s.%s=%v", key, subKey, subValue)
+			}
+		} else {
+			logger.Infof("%s=%v", key, value)
+		}
+	}
+	logger.Info("==================================================")
+
 	// 初始化数据库
 	if err := database.Init(); err != nil {
 		logger.Fatal("Failed to initialize database:", err)

@@ -10,7 +10,7 @@ server:
   write_timeout: 10
 
 database:
-  host: "localhost"
+  host: "mysql"
   port: 3306
   username: "float_user"
   password: "your_password"

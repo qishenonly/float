@@ -19,17 +19,27 @@ deps: ## 安装依赖
 docker-build: ## 构建 Docker 镜像
 	cd deployments/docker && docker-compose build
 
-docker-build-tar: ## 构建 Docker 镜像并打包为 tar 文件
-	@echo "开始构建镜像..."
-	cd deployments/docker && docker-compose build
-	@echo "镜像构建完成，开始打包..."
-	@IMAGE_ID=$$(docker compose -f deployments/docker/docker-compose.yml images -q api) && \
-	if [ -n "$$IMAGE_ID" ]; then \
-		docker save -o float-backend-api.tar $$IMAGE_ID && \
-		echo "✓ 镜像已打包为 float-backend-api.tar" && \
-		ls -lh float-backend-api.tar; \
+docker-build-tar: ## 构建 Docker 镜像并打包为 tar 文件 (支持版本号: make docker-build-tar VERSION=v1.0.0)
+	@echo "开始构建镜像..."; \
+	cd deployments/docker && docker-compose build; \
+	echo "镜像构建完成，开始打包..."; \
+	VERSION=$${VERSION:-latest}; \
+	LATEST_IMAGE=float-backend-api:latest; \
+	TARGET_IMAGE=float-backend-api:$$VERSION; \
+	if [ "$$VERSION" != "latest" ]; then \
+		echo "标签化镜像: $$LATEST_IMAGE -> $$TARGET_IMAGE"; \
+		docker tag $$LATEST_IMAGE $$TARGET_IMAGE; \
+	fi; \
+	if docker images --quiet $$TARGET_IMAGE > /dev/null 2>&1; then \
+		echo "📦 检测到镜像: $$TARGET_IMAGE"; \
+		TAR_FILE=float-backend-api-$$VERSION.tar; \
+		docker save -o $$TAR_FILE $$TARGET_IMAGE; \
+		echo "✓ 镜像已打包为 $$TAR_FILE"; \
+		ls -lh $$TAR_FILE; \
 	else \
-		echo "错误：未找到镜像"; \
+		echo "❌ 错误：未找到镜像 $$TARGET_IMAGE"; \
+		echo "可用镜像列表:"; \
+		docker images | grep -E "float|api|backend" || docker images | head -10; \
 		exit 1; \
 	fi
 

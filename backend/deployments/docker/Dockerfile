@@ -1,5 +1,6 @@
 # 构建阶段
-FROM golang:1.24-alpine AS builder
+# 使用 --platform 指令支持多架构
+FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
@@ -12,8 +13,10 @@ RUN go mod download
 # 复制源代码
 COPY . .
 
-# 编译
-RUN CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/server
+# 编译为目标平台
+ARG TARGETOS=linux
+ARG TARGETARCH=amd64
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o server ./cmd/server
 
 # 运行阶段
 FROM alpine:latest
