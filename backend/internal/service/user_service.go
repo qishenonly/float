@@ -73,27 +73,32 @@ func (s *userService) Register(req *request.RegisterRequest) (*response.AuthResp
 	// 验证邮箱验证码
 	verified, err := email.VerifyCode(req.Email, req.VerificationCode)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][注册] 验证码验证失败 | 邮箱: %s | 错误: %v", req.Email, err))
 		return nil, errors.New("验证码验证失败，请重试")
 	}
 	if !verified {
+		logger.Warn(fmt.Sprintf("[用户服务][注册] 验证码错误或已过期 | 邮箱: %s", req.Email))
 		return nil, errors.New("验证码错误或已过期")
 	}
 
 	// 检查用户名是否已存在
 	existingUser, _ := s.userRepo.FindByUsername(req.Username)
 	if existingUser != nil {
+		logger.Warn(fmt.Sprintf("[用户服务][注册] 用户名已存在 | 用户名: %s", req.Username))
 		return nil, errors.New("用户名已存在")
 	}
 
 	// 检查邮箱是否已存在
 	existingEmail, _ := s.userRepo.FindByEmail(req.Email)
 	if existingEmail != nil {
+		logger.Warn(fmt.Sprintf("[用户服务][注册] 邮箱已被注册 | 邮箱: %s", req.Email))
 		return nil, errors.New("邮箱已被注册")
 	}
 
 	// 哈希密码
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][注册] 密码加密失败 | 邮箱: %s | 错误: %v", req.Email, err))
 		return nil, errors.New("密码加密失败")
 	}
 
@@ -117,20 +122,24 @@ func (s *userService) Register(req *request.RegisterRequest) (*response.AuthResp
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][注册] 创建用户失败 | 邮箱: %s | 错误: %v", req.Email, err))
 		return nil, errors.New("创建用户失败")
 	}
 
 	// 生成 Token
 	accessToken, err := utils.GenerateToken(user.ID, user.Username, user.Email)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][注册] 生成访问令牌失败 | 用户ID: %d | 错误: %v", user.ID, err))
 		return nil, errors.New("生成访问令牌失败")
 	}
 
 	refreshToken, err := utils.GenerateRefreshToken(user.ID, user.Username, user.Email)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][注册] 生成刷新令牌失败 | 用户ID: %d | 错误: %v", user.ID, err))
 		return nil, errors.New("生成刷新令牌失败")
 	}
 
+	logger.Info(fmt.Sprintf("[用户服务][注册] 用户注册成功 | 用户ID: %d | 邮箱: %s | 用户名: %s", user.ID, user.Email, user.Username))
 	return &response.AuthResponse{
 		UserID:       user.ID,
 		Username:     user.Username,
@@ -146,30 +155,37 @@ func (s *userService) Register(req *request.RegisterRequest) (*response.AuthResp
 // Login 用户登录
 func (s *userService) Login(req *request.LoginRequest) (*response.AuthResponse, error) {
 	// 查找用户
-	user, err := s.userRepo.FindByUsername(req.Username)
+	user, err := s.userRepo.FindByEmail(req.Email)
 	if err != nil {
-		return nil, errors.New("用户名或密码错误")
+		logger.Warn(fmt.Sprintf("[用户服务][登录] 用户不存在 | 邮箱: %s", req.Email))
+		return nil, errors.New("邮箱或密码错误")
 	}
 
 	// 验证密码
 	if !utils.CheckPassword(req.Password, user.PasswordHash) {
-		return nil, errors.New("用户名或密码错误")
+		logger.Warn(fmt.Sprintf("[用户服务][登录] 密码错误 | 用户ID: %d | 邮箱: %s", user.ID, user.Email))
+		return nil, errors.New("邮箱或密码错误")
 	}
 
 	// 更新最后登录时间
-	_ = s.userRepo.UpdateLastLogin(user.ID)
+	if err := s.userRepo.UpdateLastLogin(user.ID); err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][登录] 更新登录时间失败 | 用户ID: %d | 错误: %v", user.ID, err))
+	}
 
 	// 生成 Token
 	accessToken, err := utils.GenerateToken(user.ID, user.Username, user.Email)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][登录] 生成访问令牌失败 | 用户ID: %d | 错误: %v", user.ID, err))
 		return nil, errors.New("生成访问令牌失败")
 	}
 
 	refreshToken, err := utils.GenerateRefreshToken(user.ID, user.Username, user.Email)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][登录] 生成刷新令牌失败 | 用户ID: %d | 错误: %v", user.ID, err))
 		return nil, errors.New("生成刷新令牌失败")
 	}
 
+	logger.Info(fmt.Sprintf("[用户服务][登录] 用户登录成功 | 用户ID: %d | 用户名: %s", user.ID, user.Username))
 	return &response.AuthResponse{
 		UserID:       user.ID,
 		Username:     user.Username,
@@ -187,15 +203,18 @@ func (s *userService) RefreshToken(refreshToken string) (*response.TokenResponse
 	// 解析 Refresh Token
 	claims, err := utils.ParseToken(refreshToken)
 	if err != nil {
+		logger.Warn(fmt.Sprintf("[用户服务][刷新令牌] 令牌解析失败 | 错误: %v", err))
 		return nil, errors.New("刷新令牌无效或已过期")
 	}
 
 	// 生成新的 Access Token
 	accessToken, err := utils.GenerateToken(claims.UserID, claims.Username, claims.Email)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][刷新令牌] 生成访问令牌失败 | 用户ID: %d | 错误: %v", claims.UserID, err))
 		return nil, errors.New("生成访问令牌失败")
 	}
 
+	logger.Info(fmt.Sprintf("[用户服务][刷新令牌] 令牌刷新成功 | 用户ID: %d", claims.UserID))
 	return &response.TokenResponse{
 		AccessToken: accessToken,
 		ExpiresIn:   viper.GetInt("jwt.access_token_expire"),
@@ -206,6 +225,7 @@ func (s *userService) RefreshToken(refreshToken string) (*response.TokenResponse
 func (s *userService) GetUserByID(userID int64) (*response.UserResponse, error) {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][获取信息] 查询用户失败 | 用户ID: %d | 错误: %v", userID, err))
 		return nil, err
 	}
 
@@ -214,6 +234,7 @@ func (s *userService) GetUserByID(userID int64) (*response.UserResponse, error) 
 		phone = *user.Phone
 	}
 
+	logger.Info(fmt.Sprintf("[用户服务][获取信息] 成功获取用户信息 | 用户ID: %d | 用户名: %s", user.ID, user.Username))
 	return &response.UserResponse{
 		ID:              user.ID,
 		Username:        user.Username,
@@ -240,6 +261,7 @@ func (s *userService) GetUserByID(userID int64) (*response.UserResponse, error) 
 func (s *userService) UpdateUser(userID int64, req *request.UpdateUserRequest) error {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][更新信息] 查询用户失败 | 用户ID: %d | 错误: %v", userID, err))
 		return err
 	}
 
@@ -263,35 +285,51 @@ func (s *userService) UpdateUser(userID int64, req *request.UpdateUserRequest) e
 		user.DarkMode = *req.DarkMode
 	}
 
-	return s.userRepo.Update(user)
+	if err := s.userRepo.Update(user); err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][更新信息] 更新用户失败 | 用户ID: %d | 错误: %v", userID, err))
+		return err
+	}
+
+	logger.Info(fmt.Sprintf("[用户服务][更新信息] 用户信息更新成功 | 用户ID: %d", userID))
+	return nil
 }
 
 // UpdatePassword 修改密码
 func (s *userService) UpdatePassword(userID int64, req *request.UpdatePasswordRequest) error {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][修改密码] 查询用户失败 | 用户ID: %d | 错误: %v", userID, err))
 		return err
 	}
 
 	// 验证旧密码
 	if !utils.CheckPassword(req.OldPassword, user.PasswordHash) {
+		logger.Warn(fmt.Sprintf("[用户服务][修改密码] 原密码错误 | 用户ID: %d", userID))
 		return errors.New("原密码错误")
 	}
 
 	// 哈希新密码
 	hashedPassword, err := utils.HashPassword(req.NewPassword)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][修改密码] 密码加密失败 | 用户ID: %d | 错误: %v", userID, err))
 		return errors.New("密码加密失败")
 	}
 
 	user.PasswordHash = hashedPassword
-	return s.userRepo.Update(user)
+	if err := s.userRepo.Update(user); err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][修改密码] 更新密码失败 | 用户ID: %d | 错误: %v", userID, err))
+		return err
+	}
+
+	logger.Info(fmt.Sprintf("[用户服务][修改密码] 密码修改成功 | 用户ID: %d", userID))
+	return nil
 }
 
 // GetUserStats 获取用户统计信息
 func (s *userService) GetUserStats(userID int64) (*response.UserStatsResponse, error) {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][获取统计] 查询用户失败 | 用户ID: %d | 错误: %v", userID, err))
 		return nil, err
 	}
 
@@ -300,6 +338,7 @@ func (s *userService) GetUserStats(userID int64) (*response.UserStatsResponse, e
 	now := time.Now()
 	_ = now
 
+	logger.Info(fmt.Sprintf("[用户服务][获取统计] 成功获取用户统计信息 | 用户ID: %d", userID))
 	return &response.UserStatsResponse{
 		TotalAssets:     0,
 		TotalDebt:       0,

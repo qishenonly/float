@@ -96,7 +96,7 @@ func (s *emailService) SendVerificationCode(toEmail string, code string) error {
 	subject := "Float Island - 邮箱验证码"
 	body := strings.Replace(VerificationCodeTemplate, "{{CODE}}", code, 1)
 
-	logger.Info(fmt.Sprintf("[邮件验证码] 发送验证码 | 收件人: %s", toEmail))
+	logger.Info(fmt.Sprintf("[邮件验证码] 发送验证码-%s | 收件人: %s", code, toEmail))
 	return s.sendEmail(toEmail, subject, body)
 }
 
