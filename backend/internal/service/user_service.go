@@ -139,6 +139,17 @@ func (s *userService) Register(req *request.RegisterRequest) (*response.AuthResp
 		return nil, errors.New("生成刷新令牌失败")
 	}
 
+	// 发送欢迎邮件
+	emailService := email.GetService()
+	displayName := user.DisplayName
+	if displayName == "" {
+		displayName = user.Username
+	}
+	if err := emailService.SendWelcome(user.Email, displayName); err != nil {
+		logger.Error(fmt.Sprintf("[用户服务][注册] 发送欢迎邮件失败 | 用户ID: %d | 错误: %v", user.ID, err))
+		// 邮件发送失败不影响注册结果
+	}
+
 	logger.Info(fmt.Sprintf("[用户服务][注册] 用户注册成功 | 用户ID: %d | 邮箱: %s | 用户名: %s", user.ID, user.Email, user.Username))
 	return &response.AuthResponse{
 		UserID:       user.ID,

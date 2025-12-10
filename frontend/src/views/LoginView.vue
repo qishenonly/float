@@ -16,18 +16,18 @@
         </div>
 
         <!-- Login Form -->
-        <form @submit.prevent="handleLogin" class="space-y-5 animate-enter delay-100">
-          <!-- Username -->
-          <div class="glass-input rounded-2xl px-4 py-3.5 flex items-center gap-3">
-            <i class="fa-solid fa-user text-gray-400 w-5 text-center"></i>
-            <input
-              v-model="formData.username"
-              type="text"
-              placeholder="岛民 ID / 邮箱"
-              class="bg-transparent w-full outline-none text-gray-700 font-medium placeholder-gray-400"
-              required
-            >
-          </div>
+         <form @submit.prevent="handleLogin" class="space-y-5 animate-enter delay-100">
+           <!-- Email -->
+           <div class="glass-input rounded-2xl px-4 py-3.5 flex items-center gap-3">
+             <i class="fa-solid fa-envelope text-gray-400 w-5 text-center"></i>
+             <input
+               v-model="formData.email"
+               type="email"
+               placeholder="电子邮箱"
+               class="bg-transparent w-full outline-none text-gray-700 font-medium placeholder-gray-400"
+               required
+             >
+           </div>
 
           <!-- Password -->
           <div class="glass-input rounded-2xl px-4 py-3.5 flex items-center gap-3">
@@ -111,7 +111,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const formData = ref({
-  username: '',
+  email: '',
   password: ''
 })
 
@@ -124,8 +124,8 @@ const translateError = (error) => {
   const errorMap = {
     'Network Error': '网络连接失败，请检查网络设置',
     'timeout': '请求超时，请稍后重试',
-    'Request failed with status code 400': '用户名或密码错误',
-    'Request failed with status code 401': '用户名或密码错误',
+    'Request failed with status code 400': '邮箱或密码错误',
+    'Request failed with status code 401': '邮箱或密码错误',
     'Request failed with status code 500': '服务器错误，请稍后重试',
   }
   
@@ -144,7 +144,7 @@ const translateError = (error) => {
   }
   
   // 默认友好提示
-  return '登录失败，请检查用户名和密码'
+  return '登录失败，请检查邮箱和密码'
 }
 
 const handleLogin = async () => {

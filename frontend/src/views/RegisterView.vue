@@ -19,10 +19,21 @@
             <input
               v-model="formData.username"
               type="text"
-              placeholder="岛民ID（用户名）"
+              placeholder="岛民ID（用户名，最少3个字符）"
               class="bg-transparent w-full outline-none text-gray-700 font-medium placeholder-gray-400"
               required
               minlength="3"
+            >
+          </div>
+
+          <!-- Display Name -->
+          <div class="glass-input rounded-2xl px-4 py-3.5 flex items-center gap-3">
+            <i class="fa-regular fa-id-card text-gray-400 w-5 text-center"></i>
+            <input
+              v-model="formData.displayName"
+              type="text"
+              placeholder="显示名称（选填）"
+              class="bg-transparent w-full outline-none text-gray-700 font-medium placeholder-gray-400"
             >
           </div>
 
@@ -36,6 +47,32 @@
               class="bg-transparent w-full outline-none text-gray-700 font-medium placeholder-gray-400"
               required
             >
+          </div>
+
+          <!-- Verification Code -->
+          <div class="flex gap-3">
+            <div class="glass-input rounded-2xl px-4 py-3.5 flex items-center gap-3 flex-1">
+              <i class="fa-solid fa-envelope-open-text text-gray-400 w-5 text-center"></i>
+              <input
+                v-model="formData.verificationCode"
+                type="text"
+                placeholder="验证码"
+                maxlength="6"
+                class="bg-transparent w-full outline-none text-gray-700 font-medium placeholder-gray-400"
+                required
+              >
+            </div>
+            <button
+              type="button"
+              @click="sendVerificationCode"
+              :disabled="loading || !formData.email || codeSending"
+              class="px-4 py-3.5 bg-indigo-50 border border-indigo-200 text-indigo-600 font-bold rounded-2xl hover:bg-indigo-100 transition disabled:opacity-50 whitespace-nowrap text-sm"
+            >
+              <span v-if="!codeSending">{{ codeButtonText }}</span>
+              <span v-else class="flex items-center gap-1">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+              </span>
+            </button>
           </div>
 
           <!-- Password -->
@@ -172,9 +209,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import apiClient from '@/api/client'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -182,7 +220,9 @@ const authStore = useAuthStore()
 const formData = ref({
   username: '',
   email: '',
-  password: ''
+  password: '',
+  verificationCode: '',
+  displayName: ''
 })
 
 const confirmPassword = ref('')
@@ -191,6 +231,15 @@ const agreedToTerms = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
 const showTermsDialog = ref(false)
+const codeSending = ref(false)
+const codeCountdown = ref(0)
+
+const codeButtonText = computed(() => {
+  if (codeCountdown.value > 0) {
+    return `${codeCountdown.value}s`
+  }
+  return '发送验证码'
+})
 
 const showTerms = () => {
   showTermsDialog.value = true
@@ -228,6 +277,34 @@ const translateError = (error) => {
   return '注册失败，请稍后重试'
 }
 
+const sendVerificationCode = async () => {
+  if (!formData.value.email) {
+    errorMessage.value = '请先输入邮箱地址'
+    return
+  }
+
+  codeSending.value = true
+  errorMessage.value = ''
+
+  try {
+    await apiClient.post('/auth/send-verification-code', {
+      email: formData.value.email
+    })
+    codeCountdown.value = 60
+    const timer = setInterval(() => {
+      codeCountdown.value--
+      if (codeCountdown.value <= 0) {
+        clearInterval(timer)
+      }
+    }, 1000)
+  } catch (error) {
+    console.error('Send code error:', error)
+    errorMessage.value = translateError(error)
+  } finally {
+    codeSending.value = false
+  }
+}
+
 const handleRegister = async () => {
   // 验证密码匹配
   if (formData.value.password !== confirmPassword.value) {
@@ -237,6 +314,11 @@ const handleRegister = async () => {
 
   if (!agreedToTerms.value) {
     errorMessage.value = '请先同意浮岛居民协议'
+    return
+  }
+
+  if (!formData.value.verificationCode) {
+    errorMessage.value = '请输入邮箱验证码'
     return
   }
 
