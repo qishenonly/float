@@ -2,11 +2,13 @@ package service
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/qiuhaonan/float-backend/internal/dto/request"
 	"github.com/qiuhaonan/float-backend/internal/dto/response"
 	"github.com/qiuhaonan/float-backend/internal/models"
 	"github.com/qiuhaonan/float-backend/internal/repository"
+	"github.com/qiuhaonan/float-backend/pkg/logger"
 )
 
 // AccountService 账户服务接口
@@ -32,8 +34,13 @@ func NewAccountService() AccountService {
 
 // GetAccounts 获取账户列表
 func (s *accountService) GetAccounts(userID int64) ([]*response.AccountResponse, error) {
+	timer := logger.NewTimer("获取账户列表")
+	logger.Info(fmt.Sprintf("[Service][账户] 获取账户列表 | 用户ID: %d", userID))
+
 	accounts, err := s.accountRepo.FindByUserID(userID)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Service][账户] 查询失败 | 用户ID: %d | 错误: %v", userID, err))
+		timer.LogError("查询账户列表失败")
 		return nil, err
 	}
 
@@ -41,6 +48,9 @@ func (s *accountService) GetAccounts(userID int64) ([]*response.AccountResponse,
 	for _, acc := range accounts {
 		result = append(result, s.toAccountResponse(acc))
 	}
+
+	logger.Info(fmt.Sprintf("[Service][账户] 获取成功 | 用户ID: %d | 账户数: %d", userID, len(result)))
+	timer.LogSlowWithThreshold("获取账户列表完成", 300)
 	return result, nil
 }
 
@@ -60,6 +70,9 @@ func (s *accountService) GetAccountByID(userID int64, accountID int64) (*respons
 
 // CreateAccount 创建账户
 func (s *accountService) CreateAccount(userID int64, req *request.CreateAccountRequest) (*response.AccountResponse, error) {
+	timer := logger.NewTimer("创建账户")
+	logger.Info(fmt.Sprintf("[Service][账户] 创建账户 | 用户ID: %d | 账户名: %s | 初始余额: %.2f", userID, req.AccountName, req.InitialBalance))
+
 	includeInTotal := true
 	if req.IncludeInTotal != nil {
 		includeInTotal = *req.IncludeInTotal
@@ -80,9 +93,13 @@ func (s *accountService) CreateAccount(userID int64, req *request.CreateAccountR
 	}
 
 	if err := s.accountRepo.Create(account); err != nil {
+		logger.Error(fmt.Sprintf("[Service][账户] 创建失败 | 用户ID: %d | 账户名: %s | 错误: %v", userID, req.AccountName, err))
+		timer.LogError("创建账户失败")
 		return nil, errors.New("创建账户失败")
 	}
 
+	logger.Info(fmt.Sprintf("[Service][账户] 创建成功 | 用户ID: %d | 账户ID: %d", userID, account.ID))
+	timer.LogSlowWithThreshold("创建账户完成", 500)
 	return s.toAccountResponse(account), nil
 }
 

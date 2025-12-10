@@ -37,23 +37,28 @@ func (h *AppUpdateHandler) CheckUpdate(c *gin.Context) {
 	versionCodeStr := c.Query("version_code")
 
 	if platform == "" || versionCodeStr == "" {
+		logger.Error("[Handler][检查更新] 缺少必要参数 | platform: " + platform + " | version_code: " + versionCodeStr)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing platform or version_code"})
 		return
 	}
 
 	versionCode, err := strconv.Atoi(versionCodeStr)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][检查更新] 版本号格式错误 | platform: %s | version_code: %s", platform, versionCodeStr))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid version_code"})
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][检查更新] 检查更新请求 | 平台: %s | 当前版本: %d", platform, versionCode))
+
 	resp, err := h.service.CheckUpdate(platform, versionCode)
 	if err != nil {
-		logger.Error("Failed to check update:", err)
+		logger.Error(fmt.Sprintf("[Handler][检查更新] 检查失败 | 平台: %s | 版本: %d | 错误: %v", platform, versionCode, err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][检查更新] 检查成功 | 平台: %s | 当前版本: %d | 是否需要更新: %v", platform, versionCode, resp))
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -69,21 +74,26 @@ func (h *AppUpdateHandler) CheckUpdate(c *gin.Context) {
 func (h *AppUpdateHandler) GetLatest(c *gin.Context) {
 	platform := c.Query("platform")
 	if platform == "" {
+		logger.Error("[Handler][获取最新版本] 缺少platform参数")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing platform"})
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][获取最新版本] 获取最新版本请求 | 平台: %s", platform))
+
 	resp, err := h.service.GetLatest(platform)
 	if err != nil {
 		if err == database.ErrRecordNotFound { // Assuming gorm.ErrRecordNotFound is handled or wrapped
+			logger.Warn(fmt.Sprintf("[Handler][获取最新版本] 未找到版本 | 平台: %s", platform))
 			c.JSON(http.StatusNotFound, gin.H{"error": "No version found"})
 			return
 		}
-		logger.Error("Failed to get latest version:", err)
+		logger.Error(fmt.Sprintf("[Handler][获取最新版本] 获取失败 | 平台: %s | 错误: %v", platform, err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][获取最新版本] 获取成功 | 平台: %s | 版本代码: %v", platform, resp))
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -99,17 +109,21 @@ func (h *AppUpdateHandler) GetLatest(c *gin.Context) {
 func (h *AppUpdateHandler) GetHistory(c *gin.Context) {
 	platform := c.Query("platform")
 	if platform == "" {
+		logger.Error("[Handler][获取更新历史] 缺少platform参数")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing platform"})
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][获取更新历史] 获取更新历史请求 | 平台: %s", platform))
+
 	resp, err := h.service.GetHistory(platform)
 	if err != nil {
-		logger.Error("Failed to get update history:", err)
+		logger.Error(fmt.Sprintf("[Handler][获取更新历史] 获取失败 | 平台: %s | 错误: %v", platform, err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][获取更新历史] 获取成功 | 平台: %s | 版本数: %v", platform, len(resp)))
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -134,6 +148,7 @@ func (h *AppUpdateHandler) Upload(c *gin.Context) {
 	// 1. 获取文件
 	file, err := c.FormFile("file")
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][上传更新] 文件获取失败 | 错误: %v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "File is required"})
 		return
 	}
@@ -149,9 +164,12 @@ func (h *AppUpdateHandler) Upload(c *gin.Context) {
 	isForceUpdateStr := c.PostForm("is_force_update")
 
 	if versionCodeStr == "" || versionName == "" || platform == "" || title == "" {
+		logger.Error(fmt.Sprintf("[Handler][上传更新] 缺少必要参数 | version_code: %s | version_name: %s | platform: %s | title: %s", versionCodeStr, versionName, platform, title))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing required fields"})
 		return
 	}
+
+	logger.Info(fmt.Sprintf("[Handler][上传更新] 上传更新包请求 | 平台: %s | 版本: %s | 文件大小: %d", platform, versionName, file.Size))
 
 	versionCode, _ := strconv.Atoi(versionCodeStr)
 	isForceUpdate, _ := strconv.ParseBool(isForceUpdateStr)
@@ -194,11 +212,12 @@ func (h *AppUpdateHandler) Upload(c *gin.Context) {
 	}
 
 	if err := h.service.CreateAppUpdate(appUpdate); err != nil {
-		logger.Error("Failed to create app update record:", err)
+		logger.Error(fmt.Sprintf("[Handler][上传更新] 创建记录失败 | 平台: %s | 版本: %s | 错误: %v", platform, versionName, err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create record"})
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][上传更新] 上传成功 | 平台: %s | 版本: %s | 文件路径: %s", platform, versionName, filepath))
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Upload successful",
 		"data":    appUpdate,

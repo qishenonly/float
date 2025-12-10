@@ -3,12 +3,15 @@
     <div class="h-full flex items-center justify-center px-4 py-8">
       <div class="w-full max-w-md -mt-16">
         <!-- Logo & Title -->
-        <div class="text-center mb-8 animate-enter">
-          <div class="inline-block animate-float">
-            <div class="w-20 h-20 rounded-[2rem] bg-gradient-to-tr from-violet-600 to-indigo-500 flex items-center justify-center text-white text-3xl shadow-xl shadow-indigo-200/50 mb-6 mx-auto border-4 border-white/30 backdrop-blur-md">
-              <i class="fa-solid fa-mountain-sun"></i>
-            </div>
-          </div>
+         <div class="text-center mb-8 animate-enter">
+           <div class="inline-block animate-float">
+             <div 
+               @click="handleLogoClick"
+               class="w-20 h-20 rounded-[2rem] bg-gradient-to-tr from-violet-600 to-indigo-500 flex items-center justify-center text-white text-3xl shadow-xl shadow-indigo-200/50 mb-6 mx-auto border-4 border-white/30 backdrop-blur-md cursor-pointer hover:shadow-2xl hover:shadow-indigo-300/50 transition"
+             >
+               <i class="fa-solid fa-mountain-sun"></i>
+             </div>
+           </div>
           <h1 class="text-3xl font-extrabold text-gray-800 mb-2 tracking-tight">
             浮岛 <span class="text-indigo-600">Float Island</span>
           </h1>
@@ -99,6 +102,17 @@
         </div>
       </div>
     </div>
+
+    <!-- Health Check Modal -->
+    <HealthCheckModal 
+      :show="healthCheckShow"
+      :status="healthCheckStatus"
+      :title="healthCheckTitle"
+      :data="healthCheckData"
+      :error="healthCheckError"
+      :url="healthCheckUrl"
+      @close="healthCheckShow = false"
+    />
   </div>
 </template>
 
@@ -106,9 +120,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import HealthCheckModal from '@/components/HealthCheckModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
 
 const formData = ref({
   email: '',
@@ -118,6 +134,19 @@ const formData = ref({
 const showPassword = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
+
+// Health Check Modal
+const healthCheckShow = ref(false)
+const healthCheckStatus = ref('loading')
+const healthCheckTitle = ref('健康检查')
+const healthCheckData = ref(null)
+const healthCheckError = ref('')
+const healthCheckUrl = ref('')
+
+// Click Counter for Health Check (5 clicks in 3 seconds)
+const clickCount = ref(0)
+const clickTimeout = ref(null)
+const clickResetTimeout = ref(null)
 
 // 错误信息翻译
 const translateError = (error) => {
@@ -159,6 +188,50 @@ const handleLogin = async () => {
     errorMessage.value = translateError(error)
   } finally {
     loading.value = false
+  }
+}
+
+const handleLogoClick = () => {
+  clickCount.value++
+  
+  // Clear existing reset timeout
+  if (clickResetTimeout.value) {
+    clearTimeout(clickResetTimeout.value)
+  }
+  
+  // Check if 5 clicks reached
+  if (clickCount.value === 5) {
+    checkHealth()
+    clickCount.value = 0
+    return
+  }
+  
+  // Reset click count after 3 seconds of no clicks
+  clickResetTimeout.value = setTimeout(() => {
+    clickCount.value = 0
+  }, 3000)
+}
+
+const checkHealth = async () => {
+  healthCheckShow.value = true
+  healthCheckStatus.value = 'loading'
+  healthCheckTitle.value = '健康检查'
+  
+  // Get base URL without /api/v1 suffix
+  const baseUrl = apiBaseUrl.replace('/api/v1', '')
+  healthCheckUrl.value = `${baseUrl}/health`
+  
+  try {
+    const response = await fetch(healthCheckUrl.value)
+    const data = await response.json()
+    
+    healthCheckStatus.value = 'success'
+    healthCheckTitle.value = '健康检查成功'
+    healthCheckData.value = data
+  } catch (error) {
+    healthCheckStatus.value = 'error'
+    healthCheckTitle.value = '健康检查失败'
+    healthCheckError.value = error.message
   }
 }
 </script>

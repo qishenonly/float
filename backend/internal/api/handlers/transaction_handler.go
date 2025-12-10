@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/qiuhaonan/float-backend/internal/repository"
 	"github.com/qiuhaonan/float-backend/internal/service"
 	"github.com/qiuhaonan/float-backend/internal/utils"
+	"github.com/qiuhaonan/float-backend/pkg/logger"
 )
 
 // TransactionHandler 交易处理器
@@ -43,22 +45,28 @@ func NewTransactionHandler() *TransactionHandler {
 func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	if userID == 0 {
+		logger.Error("[Handler][创建交易] 未授权的请求")
 		utils.ErrorResponse(c, http.StatusUnauthorized, "未授权的请求")
 		return
 	}
 
 	var req request.CreateTransactionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Error(fmt.Sprintf("[Handler][创建交易] 请求参数错误 | 用户ID: %d | 错误: %v", userID, err))
 		utils.ErrorResponse(c, http.StatusBadRequest, "请求参数错误: "+err.Error())
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][创建交易] 创建交易请求 | 用户ID: %d | 交易类型: %s | 金额: %v", userID, req.Type, req.Amount))
+
 	resp, err := h.transactionService.CreateTransaction(userID, &req)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][创建交易] 创建失败 | 用户ID: %d | 错误: %v", userID, err))
 		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][创建交易] 创建成功 | 用户ID: %d | 交易ID: %d", userID, resp.ID))
 	c.JSON(http.StatusCreated, utils.Response{
 		Code:    http.StatusCreated,
 		Message: "success",
@@ -81,22 +89,28 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 func (h *TransactionHandler) CreateBatchTransactions(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	if userID == 0 {
+		logger.Error("[Handler][批量创建交易] 未授权的请求")
 		utils.ErrorResponse(c, http.StatusUnauthorized, "未授权的请求")
 		return
 	}
 
 	var req request.BulkCreateTransactionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Error(fmt.Sprintf("[Handler][批量创建交易] 请求参数错误 | 用户ID: %d | 错误: %v", userID, err))
 		utils.ErrorResponse(c, http.StatusBadRequest, "请求参数错误: "+err.Error())
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][批量创建交易] 批量创建请求 | 用户ID: %d | 数量: %d", userID, len(req.Transactions)))
+
 	resp, err := h.transactionService.CreateBatchTransactions(userID, &req)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][批量创建交易] 创建失败 | 用户ID: %d | 错误: %v", userID, err))
 		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][批量创建交易] 创建成功 | 用户ID: %d | 成功数: %d | 失败数: %d", userID, resp.SuccessCount, resp.FailureCount))
 	c.JSON(http.StatusCreated, utils.Response{
 		Code:    http.StatusCreated,
 		Message: "success",
@@ -119,22 +133,28 @@ func (h *TransactionHandler) CreateBatchTransactions(c *gin.Context) {
 func (h *TransactionHandler) GetTransaction(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	if userID == 0 {
+		logger.Error("[Handler][获取交易] 未授权的请求")
 		utils.ErrorResponse(c, http.StatusUnauthorized, "未授权的请求")
 		return
 	}
 
 	transactionID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][获取交易] 交易ID格式错误 | 用户ID: %d", userID))
 		utils.ErrorResponse(c, http.StatusBadRequest, "交易ID格式错误")
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][获取交易] 获取交易详情请求 | 用户ID: %d | 交易ID: %d", userID, transactionID))
+
 	resp, err := h.transactionService.GetTransactionByID(userID, transactionID)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][获取交易] 获取失败 | 用户ID: %d | 交易ID: %d | 错误: %v", userID, transactionID, err))
 		utils.ErrorResponse(c, http.StatusNotFound, err.Error())
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][获取交易] 获取成功 | 用户ID: %d | 交易ID: %d", userID, transactionID))
 	utils.SuccessResponse(c, resp)
 }
 
@@ -162,9 +182,11 @@ func (h *TransactionHandler) GetTransaction(c *gin.Context) {
 func (h *TransactionHandler) ListTransactions(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	if userID == 0 {
+		logger.Error("[Handler][交易列表] 未授权的请求")
 		utils.ErrorResponse(c, http.StatusUnauthorized, "未授权的请求")
 		return
 	}
+	logger.Info(fmt.Sprintf("[Handler][交易列表] 查询交易列表请求 | 用户ID: %d", userID))
 
 	var filters request.ListTransactionRequest
 
@@ -210,10 +232,12 @@ func (h *TransactionHandler) ListTransactions(c *gin.Context) {
 
 	resp, err := h.transactionService.ListTransactions(userID, &filters)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][交易列表] 查询失败 | 用户ID: %d | 错误: %v", userID, err))
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][交易列表] 查询成功 | 用户ID: %d | 总数: %d", userID, resp.Total))
 	utils.SuccessResponse(c, resp)
 }
 
@@ -234,24 +258,30 @@ func (h *TransactionHandler) ListTransactions(c *gin.Context) {
 func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	if userID == 0 {
+		logger.Error("[Handler][更新交易] 未授权的请求")
 		utils.ErrorResponse(c, http.StatusUnauthorized, "未授权的请求")
 		return
 	}
 
 	transactionID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][更新交易] 交易ID格式错误 | 用户ID: %d", userID))
 		utils.ErrorResponse(c, http.StatusBadRequest, "交易ID格式错误")
 		return
 	}
 
 	var req request.UpdateTransactionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Error(fmt.Sprintf("[Handler][更新交易] 请求参数错误 | 用户ID: %d | 交易ID: %d | 错误: %v", userID, transactionID, err))
 		utils.ErrorResponse(c, http.StatusBadRequest, "请求参数错误: "+err.Error())
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][更新交易] 更新交易请求 | 用户ID: %d | 交易ID: %d", userID, transactionID))
+
 	resp, err := h.transactionService.UpdateTransaction(userID, transactionID, &req)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][更新交易] 更新失败 | 用户ID: %d | 交易ID: %d | 错误: %v", userID, transactionID, err))
 		if err.Error() == "transaction not found" {
 			utils.ErrorResponse(c, http.StatusNotFound, err.Error())
 		} else {
@@ -260,6 +290,7 @@ func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][更新交易] 更新成功 | 用户ID: %d | 交易ID: %d", userID, transactionID))
 	utils.SuccessResponse(c, resp)
 }
 
@@ -278,17 +309,22 @@ func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 func (h *TransactionHandler) DeleteTransaction(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	if userID == 0 {
+		logger.Error("[Handler][删除交易] 未授权的请求")
 		utils.ErrorResponse(c, http.StatusUnauthorized, "未授权的请求")
 		return
 	}
 
 	transactionID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][删除交易] 交易ID格式错误 | 用户ID: %d", userID))
 		utils.ErrorResponse(c, http.StatusBadRequest, "交易ID格式错误")
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][删除交易] 删除交易请求 | 用户ID: %d | 交易ID: %d", userID, transactionID))
+
 	if err := h.transactionService.DeleteTransaction(userID, transactionID); err != nil {
+		logger.Error(fmt.Sprintf("[Handler][删除交易] 删除失败 | 用户ID: %d | 交易ID: %d | 错误: %v", userID, transactionID, err))
 		if err.Error() == "transaction not found" {
 			utils.ErrorResponse(c, http.StatusNotFound, err.Error())
 		} else {
@@ -297,6 +333,7 @@ func (h *TransactionHandler) DeleteTransaction(c *gin.Context) {
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][删除交易] 删除成功 | 用户ID: %d | 交易ID: %d", userID, transactionID))
 	c.JSON(http.StatusNoContent, nil)
 }
 

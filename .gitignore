@@ -113,6 +113,8 @@ config/secrets.yaml
 !config/example_secrets.yaml
 *.dev.yaml
 *.product.yaml
+*.env.development
+*.env.production
 
 # ===================================================================
 #  前端/后端自定义构建目录 (可根据项目调整)

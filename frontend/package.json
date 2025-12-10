@@ -6,9 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:dev": "vite build --mode development",
+    "build:prod": "vite build --mode production",
     "preview": "vite preview",
-    "android": "vite build && npx cap sync android",
-    "android:open": "vite build && npx cap sync android && npx cap open android"
+    "android": "npm run build:prod && npx cap sync android",
+    "android:dev": "npm run build:dev && npx cap sync android",
+    "android:open": "npm run build:prod && npx cap sync android && npx cap open android",
+    "android:open:dev": "npm run build:dev && npx cap sync android && npx cap open android"
   },
   "dependencies": {
     "@capacitor-community/file-opener": "^7.0.1",

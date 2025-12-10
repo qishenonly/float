@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/qiuhaonan/float-backend/internal/dto/request"
 	"github.com/qiuhaonan/float-backend/internal/service"
 	"github.com/qiuhaonan/float-backend/internal/utils"
+	"github.com/qiuhaonan/float-backend/pkg/logger"
 )
 
 // AccountHandler 账户处理器
@@ -31,13 +33,17 @@ func NewAccountHandler() *AccountHandler {
 // @Router /accounts [get]
 func (h *AccountHandler) GetAccounts(c *gin.Context) {
 	userID, _ := c.Get("user_id")
+	uID := userID.(int64)
+	logger.Info(fmt.Sprintf("[Handler][账户列表] 获取账户列表请求 | 用户ID: %d", uID))
 
-	accounts, err := h.accountService.GetAccounts(userID.(int64))
+	accounts, err := h.accountService.GetAccounts(uID)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][账户列表] 获取失败 | 用户ID: %d | 错误: %v", uID, err))
 		utils.ErrorResponse(c, http.StatusInternalServerError, "获取账户失败")
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][账户列表] 获取成功 | 用户ID: %d", uID))
 	utils.SuccessResponse(c, accounts)
 }
 
@@ -51,19 +57,25 @@ func (h *AccountHandler) GetAccounts(c *gin.Context) {
 // @Router /accounts/:id [get]
 func (h *AccountHandler) GetAccount(c *gin.Context) {
 	userID, _ := c.Get("user_id")
+	uID := userID.(int64)
 
 	accountID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][账户详情] 账户ID格式错误 | 用户ID: %d", uID))
 		utils.ErrorResponse(c, http.StatusBadRequest, "无效的账户ID")
 		return
 	}
 
-	account, err := h.accountService.GetAccountByID(userID.(int64), accountID)
+	logger.Info(fmt.Sprintf("[Handler][账户详情] 获取账户详情请求 | 用户ID: %d | 账户ID: %d", uID, accountID))
+
+	account, err := h.accountService.GetAccountByID(uID, accountID)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][账户详情] 获取失败 | 用户ID: %d | 账户ID: %d | 错误: %v", uID, accountID, err))
 		utils.ErrorResponse(c, http.StatusNotFound, err.Error())
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][账户详情] 获取成功 | 用户ID: %d | 账户ID: %d", uID, accountID))
 	utils.SuccessResponse(c, account)
 }
 
@@ -77,19 +89,25 @@ func (h *AccountHandler) GetAccount(c *gin.Context) {
 // @Router /accounts [post]
 func (h *AccountHandler) CreateAccount(c *gin.Context) {
 	userID, _ := c.Get("user_id")
+	uID := userID.(int64)
 
 	var req request.CreateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Error(fmt.Sprintf("[Handler][创建账户] 请求参数错误 | 用户ID: %d | 错误: %v", uID, err))
 		utils.ErrorResponse(c, http.StatusBadRequest, "请求参数错误")
 		return
 	}
 
-	account, err := h.accountService.CreateAccount(userID.(int64), &req)
+	logger.Info(fmt.Sprintf("[Handler][创建账户] 创建账户请求 | 用户ID: %d | 账户名: %s", uID, req.AccountName))
+
+	account, err := h.accountService.CreateAccount(uID, &req)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][创建账户] 创建失败 | 用户ID: %d | 错误: %v", uID, err))
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][创建账户] 创建成功 | 用户ID: %d | 账户ID: %d", uID, account.ID))
 	utils.SuccessResponse(c, account)
 }
 
@@ -104,24 +122,31 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 // @Router /accounts/:id [put]
 func (h *AccountHandler) UpdateAccount(c *gin.Context) {
 	userID, _ := c.Get("user_id")
+	uID := userID.(int64)
 
 	accountID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][更新账户] 账户ID格式错误 | 用户ID: %d", uID))
 		utils.ErrorResponse(c, http.StatusBadRequest, "无效的账户ID")
 		return
 	}
 
 	var req request.UpdateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Error(fmt.Sprintf("[Handler][更新账户] 请求参数错误 | 用户ID: %d | 账户ID: %d | 错误: %v", uID, accountID, err))
 		utils.ErrorResponse(c, http.StatusBadRequest, "请求参数错误")
 		return
 	}
 
-	if err := h.accountService.UpdateAccount(userID.(int64), accountID, &req); err != nil {
+	logger.Info(fmt.Sprintf("[Handler][更新账户] 更新账户请求 | 用户ID: %d | 账户ID: %d", uID, accountID))
+
+	if err := h.accountService.UpdateAccount(uID, accountID, &req); err != nil {
+		logger.Error(fmt.Sprintf("[Handler][更新账户] 更新失败 | 用户ID: %d | 账户ID: %d | 错误: %v", uID, accountID, err))
 		utils.ErrorResponse(c, http.StatusForbidden, err.Error())
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][更新账户] 更新成功 | 用户ID: %d | 账户ID: %d", uID, accountID))
 	utils.SuccessResponse(c, nil)
 }
 
@@ -135,18 +160,24 @@ func (h *AccountHandler) UpdateAccount(c *gin.Context) {
 // @Router /accounts/:id [delete]
 func (h *AccountHandler) DeleteAccount(c *gin.Context) {
 	userID, _ := c.Get("user_id")
+	uID := userID.(int64)
 
 	accountID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][删除账户] 账户ID格式错误 | 用户ID: %d", uID))
 		utils.ErrorResponse(c, http.StatusBadRequest, "无效的账户ID")
 		return
 	}
 
-	if err := h.accountService.DeleteAccount(userID.(int64), accountID); err != nil {
+	logger.Info(fmt.Sprintf("[Handler][删除账户] 删除账户请求 | 用户ID: %d | 账户ID: %d", uID, accountID))
+
+	if err := h.accountService.DeleteAccount(uID, accountID); err != nil {
+		logger.Error(fmt.Sprintf("[Handler][删除账户] 删除失败 | 用户ID: %d | 账户ID: %d | 错误: %v", uID, accountID, err))
 		utils.ErrorResponse(c, http.StatusForbidden, err.Error())
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][删除账户] 删除成功 | 用户ID: %d | 账户ID: %d", uID, accountID))
 	utils.SuccessResponse(c, nil)
 }
 
@@ -159,12 +190,16 @@ func (h *AccountHandler) DeleteAccount(c *gin.Context) {
 // @Router /accounts/balance [get]
 func (h *AccountHandler) GetAccountBalance(c *gin.Context) {
 	userID, _ := c.Get("user_id")
+	uID := userID.(int64)
+	logger.Info(fmt.Sprintf("[Handler][账户余额] 获取账户余额请求 | 用户ID: %d", uID))
 
-	balance, err := h.accountService.GetAccountBalance(userID.(int64))
+	balance, err := h.accountService.GetAccountBalance(uID)
 	if err != nil {
+		logger.Error(fmt.Sprintf("[Handler][账户余额] 获取失败 | 用户ID: %d | 错误: %v", uID, err))
 		utils.ErrorResponse(c, http.StatusInternalServerError, "获取余额失败")
 		return
 	}
 
+	logger.Info(fmt.Sprintf("[Handler][账户余额] 获取成功 | 用户ID: %d", uID))
 	utils.SuccessResponse(c, balance)
 }
