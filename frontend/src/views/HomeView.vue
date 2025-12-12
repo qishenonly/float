@@ -107,6 +107,16 @@ const getBudgetPercentage = () => {
   if (statistics.value.totalIncome === 0) return 0
   return Math.min((statistics.value.totalExpense / statistics.value.totalIncome * 100), 100)
 }
+
+const formatDateTime = (createdAt) => {
+  if (!createdAt) return ''
+  const date = new Date(createdAt)
+  return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
+const openTransactionHistory = () => {
+  router.push('/transactions')
+}
 </script>
 
 <template>
@@ -209,7 +219,7 @@ const getBudgetPercentage = () => {
     <div class="px-6 mt-8 pb-32 animate-enter delay-300">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-bold text-gray-800">今日动态</h3>
-        <button class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-400 shadow-sm hover:text-gray-800 active-press">
+        <button @click="openTransactionHistory()" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-400 shadow-sm hover:text-gray-800 active-press">
           <i class="fa-solid fa-ellipsis"></i>
         </button>
       </div>
@@ -232,8 +242,8 @@ const getBudgetPercentage = () => {
               <i class="fa-solid" :class="getCategoryIcon(transaction.category)"></i>
             </div>
             <div>
-              <h4 class="font-bold text-gray-800 text-sm">{{ transaction.title }}</h4>
-              <p class="text-[10px] text-gray-400 mt-0.5">{{ transaction.category?.name || '未分类' }} • {{ transaction.transaction_time || '未指定时间' }}</p>
+              <h4 class="font-bold text-gray-800 text-sm">{{ transaction.description || transaction.title }}</h4>
+              <p class="text-[10px] text-gray-400 mt-0.5">{{ transaction.category?.name || '未分类' }} • {{ formatDateTime(transaction.created_at) }}</p>
             </div>
           </div>
           <div class="text-right">

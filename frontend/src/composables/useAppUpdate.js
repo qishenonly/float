@@ -14,8 +14,8 @@ const updateState = reactive({
 
 // Current version info
 const currentVersion = {
-  code: 1,
-  name: '0.0.1',
+  code: 3,
+  name: '0.0.3',
   platform: 'android'
 }
 

@@ -752,22 +752,23 @@ function initializeApp() {
     gsap.registerPlugin(ScrollTrigger);
 
     // Download button click handler
-    const downloadBtn = document.getElementById('download-btn');
-    if (downloadBtn) {
-        downloadBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('正在开发中，敬请期待！');
-        });
-    }
+     const downloadBtn = document.getElementById('download-btn');
+     const downloadUrl = 'http://114.116.248.91:888/uploads/apk/android/1_floatisland_v0.0.1.apk';
+     if (downloadBtn) {
+         downloadBtn.addEventListener('click', (e) => {
+             e.preventDefault();
+             window.open(downloadUrl, '_blank');
+         });
+     }
 
-    // Add click handlers for download links
-    const downloadLinks = document.querySelectorAll('.download-link');
-    downloadLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('正在开发中，敬请期待！');
-        });
-    });
+     // Add click handlers for download links
+     const downloadLinks = document.querySelectorAll('.download-link');
+     downloadLinks.forEach(link => {
+         link.addEventListener('click', (e) => {
+             e.preventDefault();
+             window.open(downloadUrl, '_blank');
+         });
+     });
 
     // Modal functionality
     const privacyLink = document.getElementById('privacy-link');

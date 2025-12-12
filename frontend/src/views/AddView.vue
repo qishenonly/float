@@ -91,9 +91,8 @@ const switchType = (newType) => {
       selectedCategory.value = expenseCategories.value[0];
     }
   } else if (newType === "transfer") {
-    if (transferCategories.value.length > 0) {
-      selectedCategory.value = transferCategories.value[0];
-    }
+    // 转账不需要分类
+    selectedCategory.value = null;
   }
 };
 
@@ -174,7 +173,7 @@ const handleSave = async () => {
     return;
   }
 
-  if (!selectedCategory.value?.id) {
+  if (type.value !== "transfer" && !selectedCategory.value?.id) {
     showToast("请选择分类", "warning");
     return;
   }
@@ -195,13 +194,17 @@ const handleSave = async () => {
   try {
     const payload = {
        type: type.value,
-       category_id: selectedCategory.value.id,
        amount: parseFloat(amount.value),
        currency: "CNY",
-       title: selectedCategory.value.name,
+       title: type.value === "transfer" ? "转账" : selectedCategory.value.name,
        description: description.value,
        transaction_date: `${date.value}T00:00:00Z`,
      };
+
+    // 只有非转账类型才添加 category_id
+    if (type.value !== "transfer") {
+      payload.category_id = selectedCategory.value.id;
+    }
 
     // 根据交易类型填充不同字段
     if (type.value === "transfer") {
@@ -293,7 +296,7 @@ const handleSave = async () => {
             {{
               type === "transfer" ? "转账" : selectedCategory?.name || "未分类"
             }}
-            · {{ selectedAccount?.account_name || "未选账户" }}
+            · {{ type === "transfer" ? (transferFrom?.account_name || "未选账户") : (selectedAccount?.account_name || "未选账户") }}
           </span>
         </div>
       </div>

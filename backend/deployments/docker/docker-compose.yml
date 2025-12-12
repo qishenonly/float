@@ -6,11 +6,11 @@ services:
   api:
     container_name: float-api
     platform: linux/amd64  # 指定目标平台，与宿主机一致
-    # build:
-    #   context: ../..
-    #   dockerfile: deployments/docker/Dockerfile
-    #   platforms:
-    #     - linux/amd64  # 构建时指定平台
+    build:
+      context: ../..
+      dockerfile: deployments/docker/Dockerfile
+      platforms:
+        - linux/amd64  # 构建时指定平台
     image: float-backend-api:latest
     ports:
       - "${API_PORT:-8080}:8080"
@@ -167,6 +167,10 @@ services:
   #     start_period: 30s
 
 volumes:
+  # API 配置卷
+  config:
+    driver: local
+  
   # MySQL 数据卷
   mysql_data:
     driver: local
