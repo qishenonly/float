@@ -103,6 +103,26 @@ const handleUpdateClick = () => {
         </GlassCard>
       </div>
 
+
+
+      <!-- Auto Tracking -->
+      <div>
+        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">自动化</h2>
+        <GlassCard class="rounded-2xl shadow-sm overflow-hidden">
+          <div class="divide-y divide-gray-100/50">
+             <div @click="router.push('/settings/auto-tracking')" class="flex items-center justify-between p-4 hover:bg-white/50 cursor-pointer transition active-press">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-bold text-gray-700">自动记账</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-400">支付即记账</span>
+                    <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+                </div>
+             </div>
+          </div>
+        </GlassCard>
+      </div>
+
       <!-- Security & Data -->
       <div>
         <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">安全与数据</h2>

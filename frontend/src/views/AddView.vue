@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { categoryAPI } from "@/api/category";
 import { accountAPI } from "@/api/account";
 import { transactionAPI } from "@/api/transaction";
 import { useToast } from "../composables/useToast";
 
 const router = useRouter();
+const route = useRoute();
 const { showToast } = useToast();
 
 const type = ref("expense"); // 'expense', 'income', or 'transfer'
@@ -71,6 +72,18 @@ const loadData = async () => {
       }
     }
 
+
+    // Check for deep link params
+    if (route.query.auto) {
+      if (route.query.amount) {
+        amount.value = route.query.amount;
+      }
+      if (route.query.description) {
+        description.value = route.query.description;
+      }
+      // Trigger resize
+      setTimeout(adjustTextareaHeight, 100);
+    }
 
   } catch (error) {
     console.error("Failed to load data:", error);

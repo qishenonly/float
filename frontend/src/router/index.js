@@ -109,6 +109,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/settings/auto-tracking',
+      name: 'auto-tracking-settings',
+      component: () => import('../views/AutoTrackingSettings.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/settings',
       name: 'settings',
       component: () => import('../views/SettingsView.vue'),

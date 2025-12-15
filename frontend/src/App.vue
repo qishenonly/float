@@ -1,5 +1,6 @@
 <script setup>
-import { RouterView, useRoute } from 'vue-router'
+import { App } from '@capacitor/app'
+import { RouterView, useRoute, useRouter } from 'vue-router'
 import { onMounted } from 'vue'
 import BottomNav from './components/BottomNav.vue'
 import Toast from './components/Toast.vue'
@@ -8,10 +9,38 @@ import { useToast } from './composables/useToast'
 import { useAppUpdate } from './composables/useAppUpdate'
 
 const route = useRoute()
+const router = useRouter()
 const { toastState, hideToast } = useToast()
 const { updateState, checkUpdate, openUpdateDialog, confirmUpdate, closeUpdateModal } = useAppUpdate()
 
 onMounted(async () => {
+  // Listen for deep links (e.g. from floating window)
+  App.addListener('appUrlOpen', data => {
+    // Example: float://add?amount=12.50&description=Starbucks
+    // Capacitor converts this to a path but we might need to parse it manually if it's custom scheme
+    // If scheme is 'float', data.url is full URL.
+    
+    // Simple parsing
+    try {
+      const url = new URL(data.url)
+      if (url.host === 'add') {
+        const amount = url.searchParams.get('amount')
+        const description = url.searchParams.get('description')
+        
+        router.push({
+          path: '/add',
+          query: {
+             amount,
+             description,
+             auto: 'true'
+          }
+        })
+      }
+    } catch (e) {
+      console.error('Failed to parse deep link', e)
+    }
+  })
+
   try {
     const latest = await checkUpdate()
     if (latest) {
@@ -40,23 +69,23 @@ onMounted(async () => {
       </div>
 
       <!-- Bottom Navigation -->
-      <BottomNav v-if="route.name !== 'add'" />
+      <BottomNav v-if="route?.name !== 'add'" />
       
       <!-- Toast Notification -->
       <Toast 
-        :show="toastState.show" 
-        :message="toastState.message" 
-        :type="toastState.type"
+        :show="toastState?.show" 
+        :message="toastState?.message" 
+        :type="toastState?.type"
         @close="hideToast"
       />
 
       <!-- Update Modal -->
       <UpdateModal
-        :show="updateState.showModal"
-        :progress="updateState.progress"
-        :status="updateState.status"
-        :version="updateState.latestVersion?.version_name"
-        :description="updateState.latestVersion?.description"
+        :show="updateState?.showModal"
+        :progress="updateState?.progress"
+        :status="updateState?.status"
+        :version="updateState?.latestVersion?.version_name"
+        :description="updateState?.latestVersion?.description"
         @confirm="confirmUpdate"
         @cancel="closeUpdateModal"
         @close="closeUpdateModal"
