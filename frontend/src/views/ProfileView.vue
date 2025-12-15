@@ -166,7 +166,7 @@ const showComingSoon = (feature) => {
         </span>
       </button>
       
-      <p class="text-center text-[10px] text-gray-300 mt-2 mb-4 animate-enter delay-300">Version 0.0.4</p>
+      <p class="text-center text-[10px] text-gray-300 mt-2 mb-4 animate-enter delay-300">Version 0.1.0</p>
     </div>
   </div>
 </template>
