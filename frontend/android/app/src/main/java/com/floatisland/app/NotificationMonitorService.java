@@ -48,15 +48,12 @@ public class NotificationMonitorService extends NotificationListenerService {
             return;
 
         String packageName = sbn.getPackageName();
-        Log.d(TAG, "Notification Posted: " + packageName);
-
         // Filter out self
         if (getPackageName().equals(packageName))
             return;
 
         Notification notification = sbn.getNotification();
         if (notification == null || notification.extras == null) {
-            Log.w(TAG, "Notification content empty for: " + packageName);
             return;
         }
 
@@ -64,16 +61,43 @@ public class NotificationMonitorService extends NotificationListenerService {
         CharSequence titleChar = extras.getCharSequence(Notification.EXTRA_TITLE);
         CharSequence textChar = extras.getCharSequence(Notification.EXTRA_TEXT);
 
-        String title = titleChar != null ? titleChar.toString() : "No Title";
-        String text = textChar != null ? textChar.toString() : "No Text";
+        String title = titleChar != null ? titleChar.toString() : "";
+        String text = textChar != null ? textChar.toString() : "";
+        String combinedText = (title + " " + text).toLowerCase();
 
-        Log.i(TAG, String.format("Processing: [%s] Title: %s, Text: %s", packageName, title, text));
+        // Check Mode
+        boolean isTestMode = getSharedPreferences("FloatPrefs", Context.MODE_PRIVATE)
+                .getBoolean("monitor_enabled", false);
 
-        // Debug Toast to confirm receipt
-        showDebugToast("收到通知: " + packageName);
+        if (isTestMode) {
+            // TEST MODE: Show Everything
+            Log.i(TAG, "[Test Mode] Processing: " + packageName);
+            showDebugToast("测试模式收到: " + packageName);
+            safeShowWindow(text, title + "\n(" + packageName + ")");
+        } else {
+            // PRODUCTION MODE: Smart Filter
+            if (isTransactionRelated(combinedText)) {
+                Log.i(TAG, "[Smart Filter] Matched: " + packageName);
+                safeShowWindow(text, title); // Clean display for production
+            } else {
+                Log.d(TAG, "[Smart Filter] Ignored non-transaction: " + packageName);
+            }
+        }
+    }
 
-        // Attempt to show window
-        safeShowWindow(text, title + "\n(" + packageName + ")");
+    private boolean isTransactionRelated(String text) {
+        if (text == null)
+            return false;
+        String[] keywords = {
+                "支付", "收款", "到账", "消费", "交易", "余额", "转账", "付款",
+                "payment", "transaction", "received", "spent", "支出"
+        };
+        for (String key : keywords) {
+            if (text.contains(key))
+                return true;
+        }
+        // Also check for currency symbols followed by numbers loosely
+        return text.matches(".*(¥|\\$|€|元).*\\d+.*");
     }
 
     private String extractAmount(String text) {
