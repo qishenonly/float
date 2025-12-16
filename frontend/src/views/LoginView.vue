@@ -182,6 +182,8 @@ const handleLogin = async () => {
 
   try {
     await authStore.login(formData.value)
+    // Save email for next time
+    localStorage.setItem('last_email', formData.value.email)
     router.push('/')
   } catch (error) {
     console.error('Login error:', error)
@@ -211,6 +213,15 @@ const handleLogoClick = () => {
     clickCount.value = 0
   }, 3000)
 }
+
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  const lastEmail = localStorage.getItem('last_email')
+  if (lastEmail) {
+    formData.value.email = lastEmail
+  }
+})
 
 const checkHealth = async () => {
   healthCheckShow.value = true
