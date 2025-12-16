@@ -378,7 +378,7 @@ const setAdvancedFilterAccount = (accountId) => {
                   <i class="fa-solid" :class="getCategoryIcon(transaction.category)"></i>
                 </div>
                 <div>
-                  <h4 class="font-bold text-gray-800 text-sm">{{ transaction.title || transaction.category?.name || '未分类' }}</h4>
+                  <h4 class="font-bold text-gray-800 text-sm">{{ transaction.description || transaction.title || transaction.category?.name || '未分类' }}</h4>
                   <div class="flex items-center gap-1.5 mt-0.5">
                     <span class="text-[10px] text-gray-400">{{ formatTime(transaction) }} · {{ transaction.category?.name || '未分类' }}</span>
                     <span v-if="transaction.tags && transaction.tags.length > 0" class="w-1 h-1 rounded-full bg-gray-300"></span>

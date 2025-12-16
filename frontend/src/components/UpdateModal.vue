@@ -28,6 +28,23 @@ const statusText = computed(() => {
       return '处理中...'
   }
 })
+
+const formattedDescription = computed(() => {
+  if (!props.description) return '修复了一些已知问题，优化用户体验。'
+  
+  let text = props.description
+  
+  // Ensure headers start on new lines
+  text = text.replace(/([✨🔧])/g, '\n\n$1 ')
+  
+  // Format specific "Fixed" items as bullets if they are buried in text
+  // Match "修复了" but avoid double replacing if it's already at start of line
+  text = text.replace(/([^•\n])(修复了)/g, '$1\n• $2')
+  // Also handle cases where "现在" might start a sentence
+  text = text.replace(/([^•\n])(现在)/g, '$1\n• $2')
+  
+  return text.trim()
+})
 </script>
 
 <template>
@@ -53,7 +70,7 @@ const statusText = computed(() => {
         <!-- Prompt Content -->
         <div v-if="status === 'prompt'">
            <div class="bg-gray-50 rounded-xl p-4 mb-6 text-left max-h-40 overflow-y-auto">
-              <p class="text-sm text-gray-600 whitespace-pre-wrap">{{ description || '修复了一些已知问题，优化用户体验。' }}</p>
+              <p class="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">{{ formattedDescription }}</p>
            </div>
            <div class="flex gap-3">
              <button @click="$emit('cancel')" class="flex-1 py-3 bg-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-200 transition">稍后再说</button>
