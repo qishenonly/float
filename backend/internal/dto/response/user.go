@@ -9,6 +9,7 @@ type AuthResponse struct {
 	Email        string `json:"email"`
 	DisplayName  string `json:"display_name,omitempty"`
 	AvatarURL    string `json:"avatar_url,omitempty"`
+	Role         string `json:"role"`
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 	ExpiresIn    int    `json:"expires_in"`
@@ -23,6 +24,7 @@ type UserResponse struct {
 	DisplayName     string     `json:"display_name,omitempty"`
 	AvatarURL       string     `json:"avatar_url,omitempty"`
 	Verified        bool       `json:"verified"`
+	Role            string     `json:"role"`
 	Currency        string     `json:"currency"`
 	Theme           string     `json:"theme"`
 	Language        string     `json:"language"`

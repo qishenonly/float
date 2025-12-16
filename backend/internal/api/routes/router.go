@@ -104,6 +104,15 @@ func SetupRouter() *gin.Engine {
 				notifications.PUT("/:id/read", handlers.MarkNotificationRead)
 				notifications.GET("/unread", handlers.GetUnreadCount)
 			}
+
+			// 管理员接口
+			adminHandler := handlers.NewAdminHandler(service.NewUserService())
+			admin := authorized.Group("/admin")
+			admin.Use(middlewares.AdminMiddleware())
+			{
+				admin.GET("/overview", adminHandler.GetSystemOverview)
+				admin.GET("/users", adminHandler.ListUsers)
+			}
 		}
 
 		// 软件更新 (公开接口或部分公开)

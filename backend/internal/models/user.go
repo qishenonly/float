@@ -23,6 +23,7 @@ type User struct {
 	TotalRecords    int        `gorm:"default:0" json:"total_records"`
 	TotalBadges     int        `gorm:"default:0" json:"total_badges"`
 	MembershipLevel string     `gorm:"size:20;default:'FREE'" json:"membership_level"`
+	Role            string     `gorm:"size:20;default:'user'" json:"role"`
 	CreatedAt       time.Time  `json:"created_at"`
 	UpdatedAt       time.Time  `json:"updated_at"`
 	LastLoginAt     *time.Time `json:"last_login_at,omitempty"`

@@ -25,6 +25,8 @@ type UserService interface {
 	UpdateUser(userID int64, req *request.UpdateUserRequest) error
 	UpdatePassword(userID int64, req *request.UpdatePasswordRequest) error
 	GetUserStats(userID int64) (*response.UserStatsResponse, error)
+	GetSystemOverview() (map[string]interface{}, error)
+	ListUsers(page, pageSize int) ([]*response.UserResponse, int64, error)
 }
 
 type userService struct {
@@ -153,7 +155,7 @@ func (s *userService) Register(req *request.RegisterRequest) (*response.AuthResp
 	logger.Info(fmt.Sprintf("[Service][注册] 用户创建成功 | 用户ID: %d", user.ID))
 
 	// 生成 Token
-	accessToken, err := utils.GenerateToken(user.ID, user.Username, user.Email)
+	accessToken, err := utils.GenerateToken(user.ID, user.Username, user.Email, user.Role)
 	if err != nil {
 		logger.Error(fmt.Sprintf("[Service][注册] 生成访问令牌失败 | 用户ID: %d | 错误: %v", user.ID, err))
 		timer.LogError("生成访问令牌失败")
@@ -186,6 +188,7 @@ func (s *userService) Register(req *request.RegisterRequest) (*response.AuthResp
 		Email:        user.Email,
 		DisplayName:  user.DisplayName,
 		AvatarURL:    user.AvatarURL,
+		Role:         user.Role,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		ExpiresIn:    viper.GetInt("jwt.access_token_expire"),
@@ -219,7 +222,7 @@ func (s *userService) Login(req *request.LoginRequest) (*response.AuthResponse, 
 	}
 
 	// 生成 Token
-	accessToken, err := utils.GenerateToken(user.ID, user.Username, user.Email)
+	accessToken, err := utils.GenerateToken(user.ID, user.Username, user.Email, user.Role)
 	if err != nil {
 		logger.Error(fmt.Sprintf("[Service][登录] 生成访问令牌失败 | 用户ID: %d | 错误: %v", user.ID, err))
 		timer.LogError("生成访问令牌失败")
@@ -241,6 +244,7 @@ func (s *userService) Login(req *request.LoginRequest) (*response.AuthResponse, 
 		Email:        user.Email,
 		DisplayName:  user.DisplayName,
 		AvatarURL:    user.AvatarURL,
+		Role:         user.Role,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		ExpiresIn:    viper.GetInt("jwt.access_token_expire"),
@@ -260,8 +264,16 @@ func (s *userService) RefreshToken(refreshToken string) (*response.TokenResponse
 		return nil, errors.New("刷新令牌无效或已过期")
 	}
 
+	// 获取最新用户信息以确保 Role 是最新的
+	user, err := s.userRepo.FindByID(claims.UserID)
+	if err != nil {
+		logger.Error(fmt.Sprintf("[Service][刷新令牌] 查询用户失败 | 用户ID: %d | 错误: %v", claims.UserID, err))
+		timer.LogError("查询用户失败")
+		return nil, errors.New("刷新令牌失败: 用户不存在")
+	}
+
 	// 生成新的 Access Token
-	accessToken, err := utils.GenerateToken(claims.UserID, claims.Username, claims.Email)
+	accessToken, err := utils.GenerateToken(user.ID, user.Username, user.Email, user.Role)
 	if err != nil {
 		logger.Error(fmt.Sprintf("[Service][刷新令牌] 生成访问令牌失败 | 用户ID: %d | 错误: %v", claims.UserID, err))
 		timer.LogError("生成访问令牌失败")
@@ -298,6 +310,7 @@ func (s *userService) GetUserByID(userID int64) (*response.UserResponse, error) 
 		DisplayName:     user.DisplayName,
 		AvatarURL:       user.AvatarURL,
 		Verified:        user.Verified,
+		Role:            user.Role,
 		Currency:        user.Currency,
 		Theme:           user.Theme,
 		Language:        user.Language,
@@ -416,4 +429,55 @@ func (s *userService) GetUserStats(userID int64) (*response.UserStatsResponse, e
 		ActiveSavings:   0,
 		ActiveWishlists: 0,
 	}, nil
+}
+
+// GetSystemOverview 获取系统概览（管理员）
+func (s *userService) GetSystemOverview() (map[string]interface{}, error) {
+	totalUsers, err := s.userRepo.Count()
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Get total transactions count from transaction repo if available
+
+	return map[string]interface{}{
+		"total_users":   totalUsers,
+		"system_status": "normal",
+	}, nil
+}
+
+// ListUsers 获取用户列表（管理员）
+func (s *userService) ListUsers(page, pageSize int) ([]*response.UserResponse, int64, error) {
+	users, err := s.userRepo.FindAll(page, pageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	total, err := s.userRepo.Count()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var userResps []*response.UserResponse
+	for _, u := range users {
+		var phone string
+		if u.Phone != nil {
+			phone = *u.Phone
+		}
+		userResps = append(userResps, &response.UserResponse{
+			ID:              u.ID,
+			Username:        u.Username,
+			Email:           u.Email,
+			Phone:           phone,
+			DisplayName:     u.DisplayName,
+			AvatarURL:       u.AvatarURL,
+			Verified:        u.Verified,
+			Role:            u.Role,
+			CreatedAt:       u.CreatedAt,
+			LastLoginAt:     u.LastLoginAt,
+			MembershipLevel: u.MembershipLevel,
+		})
+	}
+
+	return userResps, total, nil
 }

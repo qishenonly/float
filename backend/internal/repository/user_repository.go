@@ -16,6 +16,8 @@ type UserRepository interface {
 	FindByEmail(email string) (*models.User, error)
 	Update(user *models.User) error
 	UpdateLastLogin(userID int64) error
+	Count() (int64, error)
+	FindAll(page, pageSize int) ([]*models.User, error)
 }
 
 type userRepository struct {
@@ -82,4 +84,19 @@ func (r *userRepository) Update(user *models.User) error {
 func (r *userRepository) UpdateLastLogin(userID int64) error {
 	return r.db.Model(&models.User{}).Where("id = ?", userID).
 		Update("last_login_at", gorm.Expr("NOW()")).Error
+}
+
+// Count 统计用户总数
+func (r *userRepository) Count() (int64, error) {
+	var count int64
+	err := r.db.Model(&models.User{}).Count(&count).Error
+	return count, err
+}
+
+// FindAll 获取用户列表（分页）
+func (r *userRepository) FindAll(page, pageSize int) ([]*models.User, error) {
+	var users []*models.User
+	offset := (page - 1) * pageSize
+	err := r.db.Offset(offset).Limit(pageSize).Order("id desc").Find(&users).Error
+	return users, err
 }

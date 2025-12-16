@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>反馈中心 - 浮岛后台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+        .nav-item.active { background: linear-gradient(90deg, #1f2937 0%, #374151 100%); color: white; box-shadow: 0 4px 15px rgba(31, 41, 55, 0.3); }
+        .nav-item.inactive { color: #6b7280; }
+        .nav-item.inactive:hover { background: rgba(255, 255, 255, 0.5); color: #111827; }
+        .blob { position: absolute; filter: blur(80px); z-index: 0; opacity: 0.6; }
+        .feedback-item.active { background: rgba(255,255,255,0.8); border-left: 4px solid #4F46E5; }
+    </style>
+</head>
+<body class="bg-[#F2F4F8] h-screen overflow-hidden flex relative">
+
+    <div class="blob w-[500px] h-[500px] bg-blue-100 rounded-full top-0 left-0 mix-blend-multiply"></div>
+    <div class="blob w-[400px] h-[400px] bg-orange-100 rounded-full bottom-0 right-0 mix-blend-multiply"></div>
+
+    <aside class="w-64 h-full glass-panel z-20 flex flex-col border-r border-white/40">
+        <div class="h-20 flex items-center gap-3 px-8 border-b border-white/30">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xl shadow-lg"><i class="fa-solid fa-mountain-sun"></i></div>
+            <h1 class="font-bold text-xl text-gray-800">Float Admin</h1>
+        </div>
+        <nav class="px-4 py-8 space-y-2">
+            <p class="px-4 text-[10px] font-bold text-gray-400 uppercase mb-2">Main</p>
+            <a href="admin_dashboard.html" class="nav-item inactive flex items-center gap-3 px-4 py-3 rounded-xl transition-all"><i class="fa-solid fa-grid-2 text-sm w-5 text-center"></i><span class="text-sm font-bold">仪表盘</span></a>
+            <p class="px-4 text-[10px] font-bold text-gray-400 uppercase mb-2 mt-6">System</p>
+            <a href="#" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
+                <i class="fa-solid fa-envelope-open-text text-sm w-5 text-center"></i>
+                <span class="text-sm font-bold">反馈中心</span>
+                <span class="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-md font-bold">3</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col relative z-10 overflow-hidden">
+        <header class="h-20 px-8 flex items-center justify-between border-b border-white/30 bg-white/10 backdrop-blur-sm">
+            <h2 class="text-xl font-extrabold text-gray-800">用户反馈</h2>
+            <div class="flex gap-3">
+                <div class="glass-panel px-4 py-2 rounded-xl flex items-center gap-2 text-gray-500">
+                    <i class="fa-solid fa-filter text-xs"></i>
+                    <select class="bg-transparent text-xs font-bold outline-none"><option>全部状态</option><option>待处理</option><option>处理中</option></select>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 flex overflow-hidden">
+            <div class="w-80 border-r border-white/30 overflow-y-auto custom-scroll bg-white/20 backdrop-blur-md">
+                <div class="p-4 space-y-2">
+                    <div class="feedback-item active p-4 rounded-xl cursor-pointer hover:bg-white/60 transition">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="bg-red-100 text-red-600 text-[10px] px-2 py-0.5 rounded font-bold">Bug</span>
+                            <span class="text-[10px] text-gray-400">10min ago</span>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-800 mb-1 line-clamp-1">无法导出 PDF 文件</h4>
+                        <p class="text-xs text-gray-500 line-clamp-2">我在尝试导出上个月账单时，一直提示生成失败，请问怎么解决...</p>
+                        <div class="flex items-center gap-2 mt-3">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" class="w-5 h-5 rounded-full">
+                            <span class="text-xs text-gray-500">Alex</span>
+                        </div>
+                    </div>
+
+                    <div class="feedback-item p-4 rounded-xl cursor-pointer hover:bg-white/60 transition border-l-4 border-transparent">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="bg-green-100 text-green-600 text-[10px] px-2 py-0.5 rounded font-bold">建议</span>
+                            <span class="text-[10px] text-gray-400">2h ago</span>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-800 mb-1 line-clamp-1">希望能增加暗黑模式</h4>
+                        <p class="text-xs text-gray-500 line-clamp-2">晚上记账太亮了，现在的界面虽然好看但是...</p>
+                        <div class="flex items-center gap-2 mt-3">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" class="w-5 h-5 rounded-full">
+                            <span class="text-xs text-gray-500">Sarah</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 flex flex-col bg-white/30 backdrop-blur-xl">
+                <div class="flex-1 p-8 overflow-y-auto custom-scroll">
+                    
+                    <div class="flex justify-between items-start mb-8 pb-6 border-b border-gray-200/50">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800 mb-2">无法导出 PDF 文件</h1>
+                            <div class="flex items-center gap-4 text-xs text-gray-500">
+                                <span class="flex items-center gap-1"><i class="fa-regular fa-clock"></i> 2025-12-16 14:30</span>
+                                <span class="flex items-center gap-1"><i class="fa-solid fa-mobile-screen"></i> iPhone 14 Pro (iOS 17.0)</span>
+                                <span class="flex items-center gap-1"><i class="fa-solid fa-code-branch"></i> v1.2.0</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50">标记已读</button>
+                            <button class="px-3 py-1.5 rounded-lg bg-green-500 text-white text-xs font-bold hover:bg-green-600">完成归档</button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="flex gap-4">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" class="w-10 h-10 rounded-full bg-white shadow-sm flex-shrink-0">
+                            <div class="space-y-2 max-w-[80%]">
+                                <div class="bg-white p-4 rounded-r-2xl rounded-bl-2xl shadow-sm text-sm text-gray-700 leading-relaxed">
+                                    <p>管理员你好，我在尝试导出上个月（11月）的账单时，进度条走到 99% 就卡住了，然后提示“生成失败，请稍后重试”。</p>
+                                    <p class="mt-2">我已经尝试过切换网络和重启 App，但问题依旧。附件是我的报错截图。</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <div class="w-24 h-24 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-300 transition">
+                                        <i class="fa-regular fa-image text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-row-reverse gap-4">
+                            <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white flex-shrink-0"><i class="fa-solid fa-headset"></i></div>
+                            <div class="bg-indigo-600 text-white p-4 rounded-l-2xl rounded-br-2xl shadow-md text-sm leading-relaxed max-w-[80%]">
+                                <p>收到，感谢您的反馈。我们的工程师正在排查这个问题，预计在 30 分钟内修复。请问您导出的数据量大概有多少笔？</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-white/60 border-t border-white/50 backdrop-blur-md">
+                    <div class="glass-panel p-2 rounded-2xl bg-white focus-within:ring-2 ring-indigo-200 transition">
+                        <textarea rows="3" class="w-full bg-transparent outline-none p-2 text-sm text-gray-700 resize-none" placeholder="输入回复内容..."></textarea>
+                        <div class="flex justify-between items-center px-2 pb-1">
+                            <div class="flex gap-2 text-gray-400">
+                                <i class="fa-solid fa-paperclip hover:text-indigo-600 cursor-pointer transition"></i>
+                                <i class="fa-regular fa-face-smile hover:text-indigo-600 cursor-pointer transition"></i>
+                            </div>
+                            <button class="bg-indigo-900 text-white px-6 py-2 rounded-xl text-xs font-bold hover:bg-indigo-800 transition">发送回复</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

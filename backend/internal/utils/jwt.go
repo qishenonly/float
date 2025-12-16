@@ -13,15 +13,17 @@ type Claims struct {
 	UserID   int64  `json:"user_id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
+	Role     string `json:"role"`
 	jwt.RegisteredClaims
 }
 
 // GenerateToken 生成 Token
-func GenerateToken(userID int64, username, email string) (string, error) {
+func GenerateToken(userID int64, username, email, role string) (string, error) {
 	claims := Claims{
 		UserID:   userID,
 		Username: username,
 		Email:    email,
+		Role:     role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(viper.GetInt("jwt.access_token_expire")) * time.Second)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -38,6 +40,7 @@ func GenerateRefreshToken(userID int64, username, email string) (string, error) 
 		UserID:   userID,
 		Username: username,
 		Email:    email,
+		Role:     "", // RefreshToken doesn't need strict role check usually, or keeps it minimal
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(viper.GetInt("jwt.refresh_token_expire")) * time.Second)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

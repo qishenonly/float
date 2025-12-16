@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>系统设置 - 浮岛后台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+        .nav-item.active { background: linear-gradient(90deg, #1f2937 0%, #374151 100%); color: white; box-shadow: 0 4px 15px rgba(31, 41, 55, 0.3); }
+        .nav-item.inactive { color: #6b7280; }
+        .nav-item.inactive:hover { background: rgba(255, 255, 255, 0.5); color: #111827; }
+        .blob { position: absolute; filter: blur(80px); z-index: 0; opacity: 0.6; }
+        
+        /* Toggle Switch */
+        .toggle-checkbox:checked { right: 0; border-color: #68D391; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
+    </style>
+</head>
+<body class="bg-[#F2F4F8] h-screen overflow-hidden flex relative">
+    
+    <div class="blob w-[500px] h-[500px] bg-indigo-100 rounded-full bottom-0 left-0 mix-blend-multiply opacity-50"></div>
+
+    <aside class="w-64 h-full glass-panel z-20 flex flex-col border-r border-white/40">
+        <div class="h-20 flex items-center gap-3 px-8 border-b border-white/30">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xl shadow-lg"><i class="fa-solid fa-mountain-sun"></i></div>
+            <h1 class="font-bold text-xl text-gray-800">Float Admin</h1>
+        </div>
+        <nav class="px-4 py-8 space-y-2">
+            <p class="px-4 text-[10px] font-bold text-gray-400 uppercase mb-2">System</p>
+            <a href="#" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-xl transition-all"><i class="fa-solid fa-gear text-sm w-5 text-center"></i><span class="text-sm font-bold">系统设置</span></a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col relative z-10 overflow-hidden">
+        <header class="h-20 px-8 flex items-center justify-between">
+            <h2 class="text-xl font-extrabold text-gray-800">系统配置</h2>
+            <button class="px-6 py-2 bg-gray-900 text-white text-sm font-bold rounded-xl shadow-lg hover:scale-105 transition">保存修改</button>
+        </header>
+
+        <div class="flex-1 overflow-y-auto px-8 pb-8 custom-scroll">
+            <div class="grid grid-cols-3 gap-6">
+                <div class="col-span-1 space-y-4">
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col gap-1">
+                        <a href="#" class="px-4 py-3 rounded-xl bg-indigo-50 text-indigo-700 font-bold text-sm">通用设置</a>
+                        <a href="#" class="px-4 py-3 rounded-xl hover:bg-white/50 text-gray-600 font-bold text-sm transition">安全策略</a>
+                        <a href="#" class="px-4 py-3 rounded-xl hover:bg-white/50 text-gray-600 font-bold text-sm transition">邮件通知</a>
+                        <a href="#" class="px-4 py-3 rounded-xl hover:bg-white/50 text-gray-600 font-bold text-sm transition">备份恢复</a>
+                    </div>
+                </div>
+
+                <div class="col-span-2 space-y-6">
+                    <div class="glass-panel p-8 rounded-3xl">
+                        <h3 class="font-bold text-gray-800 mb-6 border-b border-gray-100 pb-2">站点信息</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-2">系统名称</label>
+                                <input type="text" value="浮岛 Float Island" class="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-2 text-sm focus:border-indigo-500 focus:bg-white transition outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-2">维护模式</label>
+                                <div class="flex items-center gap-3">
+                                    <div class="relative inline-block w-10 h-6 align-middle select-none transition duration-200 ease-in">
+                                        <input type="checkbox" name="toggle" id="maintenance" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                                        <label for="maintenance" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                                    </div>
+                                    <span class="text-xs text-gray-400">开启后用户将无法访问</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-3xl">
+                        <h3 class="font-bold text-gray-800 mb-6 border-b border-gray-100 pb-2">注册控制</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-2">允许新用户注册</label>
+                                <div class="relative inline-block w-10 h-6 align-middle select-none transition duration-200 ease-in">
+                                    <input type="checkbox" name="toggle" id="reg" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked/>
+                                    <label for="reg" class="toggle-label block overflow-hidden h-6 rounded-full bg-green-400 cursor-pointer"></label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-2">默认会员等级</label>
+                                <select class="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-2 text-sm outline-none">
+                                    <option>Free Plan</option>
+                                    <option>Pro Trial (7 Days)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
