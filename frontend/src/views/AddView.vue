@@ -329,7 +329,7 @@ const handleSave = async () => {
     </div>
 
     <!-- Content Area -->
-    <div class="overflow-hidden px-6">
+    <div class="px-6 relative z-0">
       <!-- Standard Section (Expense/Income) -->
       <div
         v-if="type !== 'transfer'"
@@ -342,7 +342,8 @@ const handleSave = async () => {
           >
             选择账户
           </p>
-          <div class="flex flex-wrap gap-3">
+          <!-- Added max-height and overflow-y-auto to fix overlap -->
+          <div class="flex flex-wrap gap-3 max-h-[150px] overflow-y-auto pr-1">
             <div
               v-for="acc in accounts"
               :key="acc.id"
@@ -491,19 +492,20 @@ const handleSave = async () => {
                 v-if="showFromDropdown"
                 class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-2xl shadow-lg z-50 max-h-60 overflow-y-auto"
               >
-                <div
-                  v-for="acc in accounts"
-                  :key="`from-${acc.id}`"
-                  @click="selectTransferFrom(acc)"
-                  class="px-4 py-2.5 cursor-pointer hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
-                >
                   <div
-                    class="w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0"
-                    :class="`bg-${acc.color}-100 text-${acc.color}-600`"
+                    v-for="acc in accounts"
+                    :key="`from-${acc.id}`"
+                    @click="selectTransferFrom(acc)"
+                    class="px-4 py-2.5 cursor-pointer hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
                   >
-                    <i :class="getIconClasses(acc)"></i>
+                    <div
+                      class="w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0"
+                      :class="`bg-${acc.color}-100 text-${acc.color}-600`"
+                    >
+                      <i :class="getIconClasses(acc)"></i>
+                    </div>
+                    <span class="text-xs font-bold text-gray-800">{{ acc.account_name }}</span>
                   </div>
-                  <span class="text-xs font-bold text-gray-800">{{ acc.account_name }}</span>
                 </div>
               </div>
             </div>
@@ -515,53 +517,54 @@ const handleSave = async () => {
               @click="swapTransferAccounts"
               class="w-10 h-10 rounded-full bg-white text-gray-600 shadow-md flex items-center justify-center border border-gray-200 hover:rotate-180 transition duration-300"
             >
-              <i class="fa-solid fa-arrow-right-arrow-left fa-rotate-90 text-xs"></i>
+          <i class="fa-solid fa-arrow-right-arrow-left fa-rotate-90 text-xs"></i>
             </button>
           </div>
 
           <!-- Transfer To Account Selection -->
-          <div class="mt-1">
-            <p class="text-[10px] text-gray-400 font-bold mb-2 px-1 uppercase tracking-wider">转入 (TO)</p>
-            <div class="relative">
-              <button
-                @click="showToDropdown = !showToDropdown"
-                class="w-full px-4 py-3 rounded-b-2xl bg-white border border-gray-200 border-t-0 flex items-center justify-between cursor-pointer shadow-sm hover:border-gray-300 transition-all duration-300"
-              >
-                <div class="flex items-center gap-3">
-                  <div
-                    class="w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0"
-                    :class="`bg-${transferTo?.color}-100 text-${transferTo?.color}-600`"
-                  >
-                    <i :class="getIconClasses(transferTo)"></i>
+            <!-- Transfer To Account Selection -->
+            <div class="mt-1">
+              <p class="text-[10px] text-gray-400 font-bold mb-2 px-1 uppercase tracking-wider">转入 (TO)</p>
+              <div class="relative">
+                <button
+                  @click="showToDropdown = !showToDropdown"
+                  class="w-full px-4 py-3 rounded-b-2xl bg-white border border-gray-200 border-t-0 flex items-center justify-between cursor-pointer shadow-sm hover:border-gray-300 transition-all duration-300"
+                >
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0"
+                      :class="`bg-${transferTo?.color}-100 text-${transferTo?.color}-600`"
+                    >
+                      <i :class="getIconClasses(transferTo)"></i>
+                    </div>
+                    <span class="text-sm font-bold text-gray-800">{{ transferTo?.account_name }}</span>
                   </div>
-                  <span class="text-sm font-bold text-gray-800">{{ transferTo?.account_name }}</span>
-                </div>
-                <i class="fa-solid fa-chevron-right text-gray-400 text-xs"></i>
-              </button>
-              
-              <!-- Dropdown Menu -->
-              <div
-                v-if="showToDropdown"
-                class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-2xl shadow-lg z-50 max-h-60 overflow-y-auto"
-              >
+                  <i class="fa-solid fa-chevron-right text-gray-400 text-xs"></i>
+                </button>
+                
+                <!-- Dropdown Menu -->
                 <div
-                  v-for="acc in accounts"
-                  :key="`to-${acc.id}`"
-                  @click="selectTransferTo(acc)"
-                  class="px-4 py-2.5 cursor-pointer hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
+                  v-if="showToDropdown"
+                  class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-2xl shadow-lg z-50 max-h-48 overflow-y-auto"
                 >
                   <div
-                    class="w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0"
-                    :class="`bg-${acc.color}-100 text-${acc.color}-600`"
+                    v-for="acc in accounts"
+                    :key="`to-${acc.id}`"
+                    v-show="transferFrom && acc.id !== transferFrom.id"
+                    @click="selectTransferTo(acc)"
+                    class="px-4 py-2.5 cursor-pointer hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
                   >
-                    <i :class="getIconClasses(acc)"></i>
+                    <div
+                      class="w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0"
+                      :class="`bg-${acc.color}-100 text-${acc.color}-600`"
+                    >
+                      <i :class="getIconClasses(acc)"></i>
+                    </div>
+                    <span class="text-xs font-bold text-gray-800">{{ acc.account_name }}</span>
                   </div>
-                  <span class="text-xs font-bold text-gray-800">{{ acc.account_name }}</span>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
         <!-- Transfer Notes -->
         <div class="glass-input rounded-2xl p-4 flex flex-col gap-3 mt-6">

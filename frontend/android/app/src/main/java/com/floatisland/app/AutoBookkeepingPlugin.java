@@ -26,7 +26,35 @@ public class AutoBookkeepingPlugin extends Plugin {
         ret.put("accessibility", isAccessibilityServiceEnabled());
         ret.put("notification", isNotificationServiceEnabled());
         ret.put("battery", isIgnoringBatteryOptimizations());
+
+        // Return stored monitor status to verify persistence
+        boolean monitorEnabled = getContext().getSharedPreferences("FloatPrefs", Context.MODE_PRIVATE)
+                .getBoolean("monitor_enabled", false);
+        ret.put("monitorEnabled", monitorEnabled);
+
         call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void setNotificationMonitorEnabled(PluginCall call) {
+        Boolean enabled = call.getBoolean("enabled", false);
+        if (enabled == null)
+            enabled = false;
+
+        android.util.Log.e("FloatMeta", "Setting Monitor Enabled to: " + enabled);
+
+        try {
+            // Save to Shared Preferences that NotificationService can read
+            getContext().getSharedPreferences("FloatPrefs", Context.MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("monitor_enabled", enabled)
+                    .apply();
+            android.util.Log.e("FloatMeta", "Saved preference successfully");
+        } catch (Exception e) {
+            android.util.Log.e("FloatMeta", "Failed to save preference", e);
+        }
+
+        call.resolve();
     }
 
     @PluginMethod

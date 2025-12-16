@@ -17,8 +17,7 @@ const monitorEnabled = ref(localStorage.getItem('notification_monitor_enabled') 
 const toggleMonitor = () => {
     monitorEnabled.value = !monitorEnabled.value
     localStorage.setItem('notification_monitor_enabled', monitorEnabled.value)
-    // In a real implementation we would call a Native Plugin method to set this config
-    // AutoBookkeeping.setNotificationMonitorEnabled(monitorEnabled.value)
+    AutoBookkeeping.setNotificationMonitorEnabled({ enabled: monitorEnabled.value })
 }
 
 
@@ -26,6 +25,11 @@ const checkPermissions = async () => {
   try {
     const result = await AutoBookkeeping.checkPermissions()
     permissions.value = result
+    // Sync monitor switch with actual native state
+    if (result.monitorEnabled !== undefined) {
+        monitorEnabled.value = result.monitorEnabled
+        localStorage.setItem('notification_monitor_enabled', result.monitorEnabled)
+    }
   } catch (e) {
     console.error('Failed to check permissions', e)
   }
