@@ -1,6 +1,6 @@
 app:
   name: "FloatIsland Backend"
-  version: "0.2.2"
+  version: "0.2.3"
   mode: "debug"  # debug/release
 
 server:
