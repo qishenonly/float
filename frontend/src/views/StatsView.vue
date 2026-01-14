@@ -1,10 +1,12 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useToast } from '../composables/useToast'
 import { transactionAPI } from '@/api/transaction'
 import GlassCard from '../components/GlassCard.vue'
 
 const { showToast } = useToast()
+const router = useRouter()
 
 // 数据
 const startDate = ref(new Date(new Date().getFullYear(), new Date().getMonth(), 1))
@@ -199,6 +201,20 @@ const loadCategoryStats = async () => {
     } catch (error) {
         console.error('Failed to load category stats:', error)
     }
+}
+
+// 跳转到分类详情
+const handleCategoryClick = (category) => {
+    if (!category?.category?.id) return
+    
+    router.push({
+        path: '/transactions',
+        query: {
+            category_id: category.category.id,
+            start_date: startDate.value.toISOString().split('T')[0],
+            end_date: endDate.value.toISOString().split('T')[0]
+        }
+    })
 }
 
 // 加载所有数据
@@ -495,7 +511,8 @@ onMounted(() => {
                     </div>
                     <div v-else class="space-y-3 pb-6">
                         <GlassCard v-for="(category, index) in categoryStats" :key="index"
-                            class="p-4 rounded-2xl flex items-center justify-between shadow-sm">
+                            @click="handleCategoryClick(category)"
+                            class="p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer hover:shadow-md transition active:scale-[0.98]">
                             <div class="flex items-center gap-3 w-full">
                                 <div :class="`bg-${getCategoryColor(category.category?.name)}-100 text-${getCategoryColor(category.category?.name)}-500`"
                                     class="w-10 h-10 rounded-xl flex items-center justify-center shadow-inner">

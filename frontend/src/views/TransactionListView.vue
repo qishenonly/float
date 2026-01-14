@@ -1,12 +1,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { transactionAPI } from '@/api/transaction'
 import { accountAPI } from '@/api/account'
 import { useToast } from '../composables/useToast'
 import GlassCard from '../components/GlassCard.vue'
 
 const router = useRouter()
+const route = useRoute()
 const { showToast } = useToast()
 
 const transactions = ref([])
@@ -23,7 +24,8 @@ const advancedFilters = ref({
   startDate: '',
   endDate: '',
   type: 'all', // 'all', 'expense', 'income', 'transfer'
-  accountId: null
+  accountId: null,
+  categoryId: null
 })
 
 // 统计数据
@@ -33,6 +35,17 @@ const statistics = ref({
 })
 
 onMounted(() => {
+  // 从路由参数初化筛选
+  if (route.query.category_id) {
+    advancedFilters.value.categoryId = Number(route.query.category_id)
+  }
+  if (route.query.start_date) {
+    advancedFilters.value.startDate = route.query.start_date
+  }
+  if (route.query.end_date) {
+    advancedFilters.value.endDate = route.query.end_date
+  }
+
   loadAccounts()
   loadTransactions()
 })
@@ -98,6 +111,9 @@ const buildFilterParams = () => {
   if (advancedFilters.value.accountId) {
     params.account_id = advancedFilters.value.accountId
   }
+  if (advancedFilters.value.categoryId) {
+    params.category_id = advancedFilters.value.categoryId
+  }
 
   // 搜索关键词
   if (searchKeyword.value.trim()) {
@@ -145,7 +161,8 @@ const resetFilters = () => {
     startDate: '',
     endDate: '',
     type: 'all',
-    accountId: null
+    accountId: null,
+    categoryId: null
   }
 }
 
