@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/qiuhaonan/float-backend/internal/api/routes"
+	"github.com/qiuhaonan/float-backend/internal/backup"
 	"github.com/qiuhaonan/float-backend/internal/models"
 	"github.com/qiuhaonan/float-backend/pkg/cache"
 	"github.com/qiuhaonan/float-backend/pkg/database"
@@ -93,6 +94,10 @@ func main() {
 		WriteTimeout:   time.Duration(viper.GetInt("server.write_timeout")) * time.Second,
 		MaxHeaderBytes: 1 << 20, // 1 MB
 	}
+
+	// 初始化并启动备份服务
+	backupService := backup.NewBackupService()
+	backupService.StartScheduler()
 
 	// 启动服务器（goroutine）
 	go func() {

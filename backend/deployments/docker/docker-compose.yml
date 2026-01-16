@@ -63,6 +63,8 @@ services:
       - api_uploads:/root/uploads
       # 映射日志目录
       - api_logs:/root/logs
+      # 映射数据库备份目录
+      - api_backups:/root/backups
     
     depends_on:
       mysql:
@@ -189,6 +191,10 @@ volumes:
   
   # API 日志卷
   api_logs:
+    driver: local
+
+  # API 备份卷
+  api_backups:
     driver: local
 
 networks:
