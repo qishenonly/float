@@ -246,27 +246,40 @@ func TestUpdateTransaction(t *testing.T) {
 
 	userID := int64(1)
 	transactionID := int64(1)
+	accountID := int64(100)
 
 	oldTransaction := &models.Transaction{
-		ID:     transactionID,
-		UserID: userID,
-		Amount: 100.00,
-		Type:   "expense",
+		ID:        transactionID,
+		UserID:    userID,
+		Amount:    100.00,
+		Type:      "expense",
+		AccountID: &accountID,
+	}
+
+	account := &models.Account{
+		ID:      accountID,
+		UserID:  userID,
+		Balance: 900.00, // 初始1000，已扣100
 	}
 
 	req := &request.UpdateTransactionRequest{
 		Amount: 150.00,
 	}
 
-	mockTransRepo.On("FindByID", transactionID).Return(oldTransaction, nil)
+	mockTransRepo.On("FindByID", transactionID).Return(oldTransaction, nil).Once()
+	mockAccountRepo.On("FindByID", accountID).Return(account, nil)
+	mockAccountRepo.On("Update", mock.MatchedBy(func(a *models.Account) bool {
+		return a.ID == accountID
+	})).Return(nil)
 	mockTransRepo.On("Update", mock.MatchedBy(func(t *models.Transaction) bool {
 		return t.ID == transactionID && t.Amount == 150.00
 	})).Return(nil)
 	mockTransRepo.On("FindByID", transactionID).Return(&models.Transaction{
-		ID:     transactionID,
-		UserID: userID,
-		Amount: 150.00,
-		Type:   "expense",
+		ID:        transactionID,
+		UserID:    userID,
+		Amount:    150.00,
+		Type:      "expense",
+		AccountID: &accountID,
 	}, nil)
 
 	resp, err := service.UpdateTransaction(userID, transactionID, req)
@@ -274,6 +287,117 @@ func TestUpdateTransaction(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 	assert.Equal(t, 150.00, resp.Amount)
+}
+
+// TestUpdateTransactionWithAmountChange 测试金额变化时账户余额更新
+func TestUpdateTransactionWithAmountChange(t *testing.T) {
+	mockTransRepo := new(MockTransactionRepository)
+	mockAccountRepo := new(MockAccountRepository)
+	mockCategoryRepo := new(MockCategoryRepository)
+
+	service := NewTransactionService(mockTransRepo, mockAccountRepo, mockCategoryRepo)
+
+	userID := int64(1)
+	transactionID := int64(1)
+	accountID := int64(100)
+
+	// 原交易：支出100，账户余额900（初始1000-100）
+	oldTransaction := &models.Transaction{
+		ID:        transactionID,
+		UserID:    userID,
+		Amount:    100.00,
+		Type:      "expense",
+		AccountID: &accountID,
+	}
+
+	account := &models.Account{
+		ID:      accountID,
+		UserID:  userID,
+		Balance: 900.00,
+	}
+
+	// 修改金额为80
+	req := &request.UpdateTransactionRequest{
+		Amount: 80.00,
+	}
+
+	mockTransRepo.On("FindByID", transactionID).Return(oldTransaction, nil).Once()
+	mockAccountRepo.On("FindByID", accountID).Return(account, nil)
+	// 期望账户余额：900 + 100（恢复旧支出）- 80（应用新支出）= 920
+	mockAccountRepo.On("Update", mock.Anything).Return(nil)
+	mockTransRepo.On("Update", mock.Anything).Return(nil)
+	mockTransRepo.On("FindByID", transactionID).Return(&models.Transaction{
+		ID:        transactionID,
+		UserID:    userID,
+		Amount:    80.00,
+		Type:      "expense",
+		AccountID: &accountID,
+	}, nil)
+
+	resp, err := service.UpdateTransaction(userID, transactionID, req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, 80.00, resp.Amount)
+}
+
+// TestUpdateTransactionWithAccountChange 测试付款账户变更
+func TestUpdateTransactionWithAccountChange(t *testing.T) {
+	mockTransRepo := new(MockTransactionRepository)
+	mockAccountRepo := new(MockAccountRepository)
+	mockCategoryRepo := new(MockCategoryRepository)
+
+	service := NewTransactionService(mockTransRepo, mockAccountRepo, mockCategoryRepo)
+
+	userID := int64(1)
+	transactionID := int64(1)
+	oldAccountID := int64(100)
+	newAccountID := int64(200)
+
+	// 原交易：从账户100支出100
+	oldTransaction := &models.Transaction{
+		ID:        transactionID,
+		UserID:    userID,
+		Amount:    100.00,
+		Type:      "expense",
+		AccountID: &oldAccountID,
+	}
+
+	oldAccount := &models.Account{
+		ID:      oldAccountID,
+		UserID:  userID,
+		Balance: 900.00, // 已扣款
+	}
+
+	newAccount := &models.Account{
+		ID:      newAccountID,
+		UserID:  userID,
+		Balance: 500.00,
+	}
+
+	// 修改账户为200
+	req := &request.UpdateTransactionRequest{
+		AccountID: &newAccountID,
+	}
+
+	mockTransRepo.On("FindByID", transactionID).Return(oldTransaction, nil).Once()
+	mockAccountRepo.On("FindByID", oldAccountID).Return(oldAccount, nil)
+	mockAccountRepo.On("FindByID", newAccountID).Return(newAccount, nil)
+	mockAccountRepo.On("Update", mock.Anything).Return(nil)
+	mockTransRepo.On("Update", mock.Anything).Return(nil)
+	mockTransRepo.On("FindByID", transactionID).Return(&models.Transaction{
+		ID:        transactionID,
+		UserID:    userID,
+		Amount:    100.00,
+		Type:      "expense",
+		AccountID: &newAccountID,
+	}, nil)
+
+	resp, err := service.UpdateTransaction(userID, transactionID, req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	// 期望：旧账户余额恢复1000，新账户余额变为400
 }
 
 // TestDeleteTransaction 测试删除交易

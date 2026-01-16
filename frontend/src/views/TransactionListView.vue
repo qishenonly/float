@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { transactionAPI } from '@/api/transaction'
 import { accountAPI } from '@/api/account'
+import { categoryAPI } from '@/api/category'
 import { useToast } from '../composables/useToast'
 import GlassCard from '../components/GlassCard.vue'
 
@@ -12,8 +13,24 @@ const { showToast } = useToast()
 
 const transactions = ref([])
 const accounts = ref([])
+const expenseCategories = ref([])
+const incomeCategories = ref([])
 const loading = ref(false)
 const showFilterDrawer = ref(false)
+
+// 编辑弹窗状态
+const showEditDrawer = ref(false)
+const editingTransaction = ref(null)
+const editForm = ref({
+  type: 'expense',
+  amount: '',
+  description: '',
+  categoryId: null,
+  accountId: null,
+  toAccountId: null,
+  transactionDate: ''
+})
+const editLoading = ref(false)
 
 // 筛选状态
 const activeQuickFilter = ref('all') // 'all', 'month', 'expense', 'income', 'large'
@@ -52,8 +69,14 @@ onMounted(() => {
 
 const loadAccounts = async () => {
   try {
-    const res = await accountAPI.getAccounts()
-    accounts.value = res.data || []
+    const [accountsRes, expenseRes, incomeRes] = await Promise.all([
+      accountAPI.getAccounts(),
+      categoryAPI.getCategories('expense'),
+      categoryAPI.getCategories('income')
+    ])
+    accounts.value = accountsRes.data || []
+    expenseCategories.value = expenseRes.data || []
+    incomeCategories.value = incomeRes.data || []
   } catch (error) {
     console.error('Failed to load accounts:', error)
   }
@@ -263,6 +286,115 @@ const setAdvancedFilterType = (type) => {
 const setAdvancedFilterAccount = (accountId) => {
   advancedFilters.value.accountId = accountId
 }
+
+// 编辑相关方法
+const editCategories = computed(() => {
+  return editForm.value.type === 'income' ? incomeCategories.value : expenseCategories.value
+})
+
+const openEditDrawer = (transaction) => {
+  editingTransaction.value = transaction
+  editForm.value = {
+    type: transaction.type,
+    amount: transaction.amount.toString(),
+    description: transaction.description || '',
+    categoryId: transaction.category_id || transaction.category?.id || null,
+    accountId: transaction.account_id || transaction.account?.id || null,
+    toAccountId: transaction.to_account_id || null,
+    transactionDate: transaction.transaction_date?.split('T')[0] || new Date().toISOString().split('T')[0]
+  }
+  showEditDrawer.value = true
+}
+
+const closeEditDrawer = () => {
+  showEditDrawer.value = false
+  editingTransaction.value = null
+}
+
+const switchEditType = (newType) => {
+  editForm.value.type = newType
+  // 切换类型时重置分类选择
+  if (newType !== 'transfer') {
+    const cats = newType === 'income' ? incomeCategories.value : expenseCategories.value
+    editForm.value.categoryId = cats.length > 0 ? cats[0].id : null
+  } else {
+    editForm.value.categoryId = null
+  }
+}
+
+const handleEditSave = async () => {
+  if (!editForm.value.amount || parseFloat(editForm.value.amount) <= 0) {
+    showToast('请输入有效的金额', 'warning')
+    return
+  }
+
+  if (editForm.value.type !== 'transfer' && !editForm.value.categoryId) {
+    showToast('请选择分类', 'warning')
+    return
+  }
+
+  if (!editForm.value.accountId && editForm.value.type !== 'transfer') {
+    showToast('请选择账户', 'warning')
+    return
+  }
+
+  if (editForm.value.type === 'transfer') {
+    if (!editForm.value.accountId || !editForm.value.toAccountId) {
+      showToast('请选择转账账户', 'warning')
+      return
+    }
+  }
+
+  editLoading.value = true
+  try {
+    const payload = {
+      type: editForm.value.type,
+      amount: parseFloat(editForm.value.amount),
+      description: editForm.value.description,
+      transaction_date: `${editForm.value.transactionDate}T00:00:00Z`,
+      account_id: editForm.value.accountId
+    }
+
+    if (editForm.value.type !== 'transfer') {
+      payload.category_id = editForm.value.categoryId
+    }
+
+    if (editForm.value.type === 'transfer') {
+      payload.to_account_id = editForm.value.toAccountId
+    }
+
+    await transactionAPI.updateTransaction(editingTransaction.value.id, payload)
+    showToast('修改成功，账户余额已同步更新', 'success')
+    closeEditDrawer()
+    loadTransactions()
+    loadAccounts() // 刷新账户余额
+  } catch (error) {
+    console.error('Failed to update transaction:', error)
+    showToast(error.response?.data?.message || '修改失败', 'error')
+  } finally {
+    editLoading.value = false
+  }
+}
+
+const handleDelete = async () => {
+  if (!confirm('确定要删除这笔交易吗？删除后账户余额将自动恢复。')) {
+    return
+  }
+
+  editLoading.value = true
+  try {
+    await transactionAPI.deleteTransaction(editingTransaction.value.id)
+    showToast('删除成功，账户余额已恢复', 'success')
+    closeEditDrawer()
+    loadTransactions()
+    loadAccounts() // 刷新账户余额
+  } catch (error) {
+    console.error('Failed to delete transaction:', error)
+    showToast(error.response?.data?.message || '删除失败', 'error')
+  } finally {
+    editLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -403,14 +535,23 @@ const setAdvancedFilterAccount = (accountId) => {
                   </div>
                 </div>
               </div>
-              <div class="text-right">
-                <span 
-                  class="block font-bold"
-                  :class="transaction.type === 'income' ? 'text-green-600' : 'text-gray-800'"
+              <div class="flex items-center gap-3">
+                <div class="text-right">
+                  <span 
+                    class="block font-bold"
+                    :class="transaction.type === 'income' ? 'text-green-600' : 'text-gray-800'"
+                  >
+                    {{ transaction.type === 'income' ? '+' : '-' }} {{ formatAmount(transaction.amount) }}
+                  </span>
+                  <span class="text-[10px] text-gray-400">{{ transaction.account?.account_name || '未知账户' }}</span>
+                </div>
+                <!-- 编辑按钮 -->
+                <button 
+                  @click.stop="openEditDrawer(transaction)"
+                  class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 transition"
                 >
-                  {{ transaction.type === 'income' ? '+' : '-' }} {{ formatAmount(transaction.amount) }}
-                </span>
-                <span class="text-[10px] text-gray-400">{{ transaction.account?.account_name || '未知账户' }}</span>
+                  <i class="fa-solid fa-pen-to-square text-xs"></i>
+                </button>
               </div>
             </GlassCard>
           </div>
@@ -518,6 +659,190 @@ const setAdvancedFilterAccount = (accountId) => {
       >
         确认筛选 ({{ transactions.length }})
       </button>
+    </div>
+
+    <!-- Edit Drawer Overlay -->
+    <div 
+      v-show="showEditDrawer"
+      @click="closeEditDrawer" 
+      class="drawer-overlay absolute inset-0 bg-black/20 backdrop-blur-sm z-[100]"
+      :class="{ 'open': showEditDrawer }"
+    ></div>
+
+    <!-- Edit Drawer -->
+    <div 
+      class="bottom-drawer absolute bottom-0 left-0 right-0 bg-white rounded-t-[2rem] px-5 py-4 pb-24 z-[101] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] max-h-[70vh] overflow-y-auto"
+      :class="{ 'open': showEditDrawer }"
+    >
+      <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-3"></div>
+      
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-base font-bold text-gray-800">编辑交易</h3>
+        <button @click="closeEditDrawer" class="text-gray-400 hover:text-gray-600">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3" v-if="editingTransaction">
+        <!-- 交易类型选择 -->
+        <div>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">交易类型</p>
+          <div class="grid grid-cols-3 gap-2">
+            <button 
+              @click="switchEditType('expense')"
+              class="py-2.5 rounded-xl text-xs font-bold transition"
+              :class="editForm.type === 'expense' ? 'bg-gray-900 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-100'"
+            >
+              支出
+            </button>
+            <button 
+              @click="switchEditType('income')"
+              class="py-2.5 rounded-xl text-xs font-bold transition"
+              :class="editForm.type === 'income' ? 'bg-green-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-100'"
+            >
+              收入
+            </button>
+            <button 
+              @click="switchEditType('transfer')"
+              class="py-2.5 rounded-xl text-xs font-bold transition"
+              :class="editForm.type === 'transfer' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-100'"
+            >
+              转账
+            </button>
+          </div>
+        </div>
+
+        <!-- 金额输入 -->
+        <div>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">金额</p>
+          <div class="glass-card px-3 py-2 rounded-xl flex items-center gap-2">
+            <span class="text-lg font-bold text-gray-400">¥</span>
+            <input 
+              v-model="editForm.amount"
+              type="number"
+              placeholder="0.00"
+              class="flex-1 text-xl font-bold bg-transparent outline-none text-gray-800"
+              :class="editForm.type === 'income' ? 'text-green-600' : ''"
+            >
+          </div>
+        </div>
+
+        <!-- 账户选择 -->
+        <div v-if="editForm.type !== 'transfer'">
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">账户</p>
+          <div class="flex flex-wrap gap-1.5">
+            <button 
+              v-for="acc in accounts"
+              :key="acc.id"
+              @click="editForm.accountId = acc.id"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition"
+              :class="editForm.accountId === acc.id ? 'bg-gray-900 text-white shadow-md' : 'bg-white border border-gray-100 text-gray-600'"
+            >
+              <i :class="getIconClasses(acc)" :style="{ color: editForm.accountId === acc.id ? 'white' : undefined }"></i>
+              {{ acc.account_name }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 转账账户选择 -->
+        <div v-if="editForm.type === 'transfer'">
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-3">转出账户</p>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button 
+              v-for="acc in accounts"
+              :key="'from-' + acc.id"
+              @click="editForm.accountId = acc.id"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition"
+              :class="editForm.accountId === acc.id ? 'bg-gray-900 text-white shadow-md' : 'bg-white border border-gray-100 text-gray-600'"
+            >
+              <i :class="getIconClasses(acc)" :style="{ color: editForm.accountId === acc.id ? 'white' : undefined }"></i>
+              {{ acc.account_name }}
+            </button>
+          </div>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-3">转入账户</p>
+          <div class="flex flex-wrap gap-2">
+            <button 
+              v-for="acc in accounts"
+              :key="'to-' + acc.id"
+              v-show="acc.id !== editForm.accountId"
+              @click="editForm.toAccountId = acc.id"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition"
+              :class="editForm.toAccountId === acc.id ? 'bg-blue-600 text-white shadow-md' : 'bg-white border border-gray-100 text-gray-600'"
+            >
+              <i :class="getIconClasses(acc)" :style="{ color: editForm.toAccountId === acc.id ? 'white' : undefined }"></i>
+              {{ acc.account_name }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 分类选择 -->
+        <div v-if="editForm.type !== 'transfer'">
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">分类</p>
+          <div class="grid grid-cols-5 gap-y-2 gap-x-1">
+            <div 
+              v-for="cat in editCategories"
+              :key="cat.id"
+              @click="editForm.categoryId = cat.id"
+              class="flex flex-col items-center gap-1 cursor-pointer"
+            >
+              <div 
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm shadow-sm transition"
+                :class="editForm.categoryId === cat.id 
+                  ? 'bg-gray-900 text-white shadow-md' 
+                  : `bg-${cat.color}-50 text-${cat.color}-500`"
+              >
+                <i class="fa-solid" :class="cat.icon"></i>
+              </div>
+              <span 
+                class="text-[8px] font-medium"
+                :class="editForm.categoryId === cat.id ? 'text-gray-900 font-bold' : 'text-gray-400'"
+              >
+                {{ cat.name }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 日期选择 -->
+        <div>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">日期</p>
+          <input 
+            v-model="editForm.transactionDate"
+            type="date"
+            class="glass-card w-full px-3 py-2 rounded-lg text-sm font-bold text-gray-700 bg-transparent outline-none"
+          >
+        </div>
+
+        <!-- 备注 -->
+        <div>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">备注</p>
+          <textarea 
+            v-model="editForm.description"
+            placeholder="添加备注..."
+            class="glass-card w-full px-3 py-2 rounded-lg text-sm text-gray-700 bg-transparent outline-none resize-none"
+            rows="1"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="flex gap-2 mt-4">
+        <button 
+          @click="handleDelete"
+          :disabled="editLoading"
+          class="flex-1 bg-red-50 text-red-600 font-bold py-3 rounded-xl active:scale-[0.98] transition disabled:opacity-60 text-sm"
+        >
+          <i class="fa-solid fa-trash-can mr-1"></i>
+          删除
+        </button>
+        <button 
+          @click="handleEditSave"
+          :disabled="editLoading"
+          class="flex-[2] bg-gray-900 text-white font-bold py-3 rounded-xl shadow-lg shadow-gray-200 active:scale-[0.98] transition disabled:opacity-60 text-sm"
+        >
+          {{ editLoading ? '保存中...' : '保存修改' }}
+        </button>
+      </div>
     </div>
   </div>
 </template>

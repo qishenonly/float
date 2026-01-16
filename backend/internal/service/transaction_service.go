@@ -173,18 +173,35 @@ func (s *transactionService) UpdateTransaction(userID int64, transactionID int64
 		return nil, errors.New("transaction not found")
 	}
 
+	// 保存原始值用于余额计算
+	oldAmount := oldTransaction.Amount
+	oldType := oldTransaction.Type
+	var oldAccountID *int64
+	var oldToAccountID *int64
+	if oldTransaction.AccountID != nil {
+		id := *oldTransaction.AccountID
+		oldAccountID = &id
+	}
+	if oldTransaction.ToAccountID != nil {
+		id := *oldTransaction.ToAccountID
+		oldToAccountID = &id
+	}
+
 	// 更新字段
 	if req.Type != "" {
 		oldTransaction.Type = req.Type
 	}
 	if req.CategoryID != nil {
 		oldTransaction.CategoryID = req.CategoryID
+		oldTransaction.Category = nil // 清空关联对象以确保GORM使用新的外键
 	}
 	if req.AccountID != nil {
 		oldTransaction.AccountID = req.AccountID
+		oldTransaction.Account = nil // 清空关联对象以确保GORM使用新的外键
 	}
 	if req.ToAccountID != nil {
 		oldTransaction.ToAccountID = req.ToAccountID
+		oldTransaction.ToAccount = nil // 清空关联对象以确保GORM使用新的外键
 	}
 	if req.Amount != 0 {
 		oldTransaction.Amount = req.Amount
@@ -214,12 +231,115 @@ func (s *transactionService) UpdateTransaction(userID int64, transactionID int64
 		oldTransaction.Images = models.JSONArray(req.Images)
 	}
 
+	// 获取新值
+	newAmount := oldTransaction.Amount
+	newType := oldTransaction.Type
+	newAccountID := oldTransaction.AccountID
+	newToAccountID := oldTransaction.ToAccountID
+
+	// 1. 恢复旧交易对账户的影响（逆向操作）
+	if err := s.reverseTransactionEffect(oldType, oldAccountID, oldToAccountID, oldAmount); err != nil {
+		return nil, fmt.Errorf("failed to reverse old transaction effect: %w", err)
+	}
+
+	// 2. 应用新交易对账户的影响（正向操作）
+	if err := s.applyTransactionEffect(newType, newAccountID, newToAccountID, newAmount); err != nil {
+		return nil, fmt.Errorf("failed to apply new transaction effect: %w", err)
+	}
+
 	if err := s.transactionRepo.Update(oldTransaction); err != nil {
 		return nil, fmt.Errorf("failed to update transaction: %w", err)
 	}
 
 	fullTransaction, _ := s.transactionRepo.FindByID(transactionID)
 	return s.toTransactionResponse(fullTransaction), nil
+}
+
+// reverseTransactionEffect 逆向恢复交易对账户的影响
+func (s *transactionService) reverseTransactionEffect(transType string, accountID, toAccountID *int64, amount float64) error {
+	if transType == "expense" || transType == "income" {
+		if accountID != nil {
+			account, err := s.accountRepo.FindByID(*accountID)
+			if err != nil {
+				return err
+			}
+			if transType == "income" {
+				// 收入的逆向：减少余额
+				account.Balance -= amount
+			} else {
+				// 支出的逆向：增加余额（退款）
+				account.Balance += amount
+			}
+			if err := s.accountRepo.Update(account); err != nil {
+				return err
+			}
+		}
+	} else if transType == "transfer" {
+		// 转账的逆向：从目标账户扣除，向源账户返还
+		if accountID != nil {
+			fromAccount, err := s.accountRepo.FindByID(*accountID)
+			if err != nil {
+				return err
+			}
+			fromAccount.Balance += amount
+			if err := s.accountRepo.Update(fromAccount); err != nil {
+				return err
+			}
+		}
+		if toAccountID != nil {
+			toAccount, err := s.accountRepo.FindByID(*toAccountID)
+			if err != nil {
+				return err
+			}
+			toAccount.Balance -= amount
+			if err := s.accountRepo.Update(toAccount); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// applyTransactionEffect 正向应用交易对账户的影响
+func (s *transactionService) applyTransactionEffect(transType string, accountID, toAccountID *int64, amount float64) error {
+	if transType == "expense" || transType == "income" {
+		if accountID != nil {
+			account, err := s.accountRepo.FindByID(*accountID)
+			if err != nil {
+				return err
+			}
+			if transType == "income" {
+				account.Balance += amount
+			} else {
+				account.Balance -= amount
+			}
+			if err := s.accountRepo.Update(account); err != nil {
+				return err
+			}
+		}
+	} else if transType == "transfer" {
+		if accountID != nil {
+			fromAccount, err := s.accountRepo.FindByID(*accountID)
+			if err != nil {
+				return err
+			}
+			fromAccount.Balance -= amount
+			if err := s.accountRepo.Update(fromAccount); err != nil {
+				return err
+			}
+		}
+		if toAccountID != nil {
+			toAccount, err := s.accountRepo.FindByID(*toAccountID)
+			if err != nil {
+				return err
+			}
+			toAccount.Balance += amount
+			if err := s.accountRepo.Update(toAccount); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // DeleteTransaction 删除交易
