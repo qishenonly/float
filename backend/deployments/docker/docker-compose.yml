@@ -21,15 +21,15 @@ services:
       APP_VERSION: "0.0.1"
       
       # 数据库配置
-      DB_HOST: mysql
-      DB_PORT: ${MYSQL_PORT:-3306}
-      DB_USERNAME: ${DB_USERNAME:-float_user}
-      DB_PASSWORD: ${DB_PASSWORD:-float_normal@godqi.user}
-      DB_DATABASE: ${DB_DATABASE:-floatisland}
-      DB_CHARSET: utf8mb4
-      DB_MAX_IDLE_CONNS: 10
-      DB_MAX_OPEN_CONNS: 100
-      DB_CONN_MAX_LIFETIME: 3600
+      DATABASE_HOST: mysql
+      DATABASE_PORT: ${MYSQL_PORT:-3306}
+      DATABASE_USERNAME: ${DB_USERNAME:-float_user}
+      DATABASE_PASSWORD: ${DB_PASSWORD:-float_normal@godqi.user}
+      DATABASE_DATABASE: ${DB_DATABASE:-floatisland}
+      DATABASE_CHARSET: utf8mb4
+      DATABASE_MAX_IDLE_CONNS: 10
+      DATABASE_MAX_OPEN_CONNS: 100
+      DATABASE_CONN_MAX_LIFETIME: 3600
       
       # Redis 配置
       REDIS_HOST: redis

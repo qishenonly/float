@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -125,7 +126,7 @@ func main() {
 }
 
 func initConfig() error {
-	viper.SetConfigName("config.dev")
+	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./config")
 	viper.AddConfigPath(".")
@@ -137,6 +138,7 @@ func initConfig() error {
 	viper.SetDefault("app.mode", "debug")
 
 	// 读取环境变量
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
