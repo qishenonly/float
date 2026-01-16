@@ -10,6 +10,8 @@ const accounts = ref([])
 const loading = ref(false)
 const showModal = ref(false)
 const modalType = ref('fund') // 'fund' or 'credit'
+const editingAccount = ref(null) // 当前正在编辑的账户
+const showDeleteConfirm = ref(false) // 删除确认弹窗状态
 
 const formData = ref({
   account_type: 'bank',
@@ -116,25 +118,42 @@ const formatNumber = (num) => {
 }
 
 // Modal Logic
-const openAddModal = (type) => {
+const openModal = (type, account = null) => {
   modalType.value = type
-  const defaultType = type === 'fund' ? 'bank' : 'credit'
-  const accountTypeObj = currentAccountTypes.value.find(t => t.value === defaultType)
+  editingAccount.value = account
   
-  formData.value = {
-    account_type: defaultType,
-    account_name: '',
-    account_number: '',
-    initial_balance: '',
-    icon: accountTypeObj?.icon || 'fa-solid fa-wallet',
-    color: 'blue',
-    include_in_total: true
+  if (account) {
+    // 编辑模式
+    formData.value = {
+      account_type: account.account_type,
+      account_name: account.account_name,
+      account_number: account.account_number || '',
+      initial_balance: account.balance, // 这里使用当前余额作为初始填充值
+      icon: account.icon,
+      color: account.color,
+      include_in_total: account.include_in_total
+    }
+  } else {
+    // 新增模式
+    const defaultType = type === 'fund' ? 'bank' : 'credit'
+    const accountTypeObj = currentAccountTypes.value.find(t => t.value === defaultType)
+    
+    formData.value = {
+      account_type: defaultType,
+      account_name: '',
+      account_number: '',
+      initial_balance: '',
+      icon: accountTypeObj?.icon || 'fa-solid fa-wallet',
+      color: 'blue',
+      include_in_total: true
+    }
   }
   showModal.value = true
 }
 
 const closeModal = () => {
   showModal.value = false
+  editingAccount.value = null
 }
 
 const saveAccount = async () => {
@@ -146,27 +165,62 @@ const saveAccount = async () => {
   loading.value = true
   try {
     let balance = Number(formData.value.initial_balance) || 0
-    // If adding a credit account and user enters positive number (e.g. 2000 debt), 
-    // we might want to store it as negative? 
-    // Usually users enter "Debt: 2000". 
-    // Let's assume for 'credit' type, if user enters positive, it means debt, so we make it negative.
-    // BUT, sometimes credit card has positive balance (overpaid).
-    // Let's stick to: User enters what they see. If they see "-2000", they enter "-2000".
-    // OR, we can provide a hint.
-    // For now, let's just save as is.
     
     const data = {
       ...formData.value,
       initial_balance: balance
     }
+    
+    // 如果是编辑模式，我们需要传递balance字段来更新当前余额
+    // 对于新增模式，initial_balance会被后端用作初始余额
+    if (editingAccount.value) {
+      // 构造更新请求
+      const updateData = {
+        account_name: data.account_name,
+        account_number: data.account_number,
+        icon: data.icon,
+        color: data.color,
+        balance: balance, // 这一步是关键，同时也允许修改余额
+        // 注意：后端目前UpdateAccountRequest结构体需要确保包含Balance字段
+      }
+      await accountAPI.updateAccount(editingAccount.value.id, updateData)
+      showToast('账户更新成功', 'success')
+    } else {
+      await accountAPI.createAccount(data)
+      showToast('账户创建成功', 'success')
+    }
 
-    await accountAPI.createAccount(data)
-    showToast('账户创建成功', 'success')
-    showModal.value = false
+    closeModal()
     await loadData()
   } catch (error) {
     console.error('Failed to save account:', error)
     showToast(error.response?.data?.message || '保存失败', 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
+const openDeleteConfirmModal = () => {
+  showDeleteConfirm.value = true
+}
+
+const closeDeleteConfirmModal = () => {
+  showDeleteConfirm.value = false
+}
+
+const handleDelete = async () => {
+  if (!editingAccount.value) return
+  
+  closeDeleteConfirmModal()
+  loading.value = true
+  try {
+    await accountAPI.deleteAccount(editingAccount.value.id)
+    showToast('账户已删除', 'success')
+    closeModal()
+    await loadData()
+  } catch (error) {
+    console.error('Failed to delete account:', error)
+    showToast(error.response?.data?.message || '删除失败', 'error')
   } finally {
     loading.value = false
   }
@@ -218,7 +272,7 @@ const saveAccount = async () => {
       <div class="mb-6 animate-enter delay-200">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-sm font-bold text-gray-800">资金账户</h3>
-          <button @click="openAddModal('fund')" class="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-500 hover:text-indigo-600 transition active-press">
+          <button @click="openModal('fund')" class="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-500 hover:text-indigo-600 transition active-press">
             <i class="fa-solid fa-plus text-xs"></i>
           </button>
         </div>
@@ -231,6 +285,7 @@ const saveAccount = async () => {
           <GlassCard 
             v-for="account in fundAccounts"
             :key="account.id"
+            @click="openModal('fund', account)"
             class="p-4 rounded-2xl flex items-center justify-between shadow-sm hover:shadow-md transition cursor-pointer"
           >
             <div class="flex items-center gap-4">
@@ -251,7 +306,7 @@ const saveAccount = async () => {
       <div class="mb-6 animate-enter delay-300">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-sm font-bold text-gray-800">信用账户</h3>
-          <button @click="openAddModal('credit')" class="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-500 hover:text-indigo-600 transition active-press">
+          <button @click="openModal('credit')" class="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-500 hover:text-indigo-600 transition active-press">
             <i class="fa-solid fa-plus text-xs"></i>
           </button>
         </div>
@@ -264,6 +319,7 @@ const saveAccount = async () => {
           <GlassCard 
             v-for="account in creditAccounts"
             :key="account.id"
+            @click="openModal('credit', account)"
             class="p-4 rounded-2xl flex items-center justify-between shadow-sm hover:shadow-md transition cursor-pointer"
           >
             <div class="flex items-center gap-4">
@@ -283,9 +339,9 @@ const saveAccount = async () => {
 
     <!-- Add Account Modal -->
     <div v-if="showModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6" @click.self="closeModal">
-      <div class="bg-white rounded-3xl w-full max-w-md p-6 space-y-5 animate-enter max-h-[85vh] overflow-y-auto">
+      <div class="bg-white rounded-3xl w-full max-w-md p-6 space-y-5 animate-enter max-h-[85vh] overflow-y-auto relative">
         <div class="flex items-center justify-between sticky top-0 bg-white z-10 pb-2">
-          <h2 class="text-lg font-bold text-gray-800">{{ modalType === 'fund' ? '添加资金账户' : '添加信用账户' }}</h2>
+          <h2 class="text-lg font-bold text-gray-800">{{ editingAccount ? '编辑账户' : (modalType === 'fund' ? '添加资金账户' : '添加信用账户') }}</h2>
           <button @click="closeModal" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
             <i class="fa-solid fa-times text-gray-500"></i>
           </button>
@@ -367,13 +423,59 @@ const saveAccount = async () => {
 
         <!-- Actions -->
         <div class="pt-4">
-          <button 
-            @click="saveAccount" 
-            :disabled="loading" 
-            class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition disabled:opacity-50 shadow-lg shadow-indigo-200"
-          >
-            {{ loading ? '保存中...' : '保存账户' }}
-          </button>
+          <div class="flex gap-3">
+             <button 
+              v-if="editingAccount"
+              @click="openDeleteConfirmModal" 
+              :disabled="loading" 
+              class="flex-1 py-3 bg-red-50 text-red-500 font-bold rounded-xl hover:bg-red-100 transition disabled:opacity-50"
+            >
+              <i class="fa-solid fa-trash-can mr-2"></i>删除
+            </button>
+            <button 
+              @click="saveAccount" 
+              :disabled="loading" 
+              class="flex-[2] py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition disabled:opacity-50 shadow-lg shadow-indigo-200"
+            >
+              {{ loading ? '保存中...' : (editingAccount ? '保存修改' : '保存账户') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div 
+      v-show="showDeleteConfirm"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-6"
+    >
+      <div 
+        class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl animate-enter"
+      >
+        <div class="flex flex-col items-center text-center">
+          <div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
+            <i class="fa-solid fa-trash-can text-2xl text-red-500"></i>
+          </div>
+          <h3 class="text-lg font-bold text-gray-800 mb-2">确认删除账户</h3>
+          <p class="text-sm text-gray-500 mb-6">
+            确定要删除账户 "{{ editingAccount?.account_name }}" 吗？<br>
+            <span class="text-red-500 text-xs mt-1 block">注意：该账户下的所有交易记录也将被一并删除且无法恢复！</span>
+          </p>
+          <div class="flex gap-3 w-full">
+            <button 
+              @click="closeDeleteConfirmModal"
+              class="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-xl active:scale-[0.98] transition text-sm"
+            >
+              取消
+            </button>
+            <button 
+              @click="handleDelete"
+              :disabled="loading"
+              class="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl active:scale-[0.98] transition text-sm disabled:opacity-60 shadow-lg shadow-red-200"
+            >
+              {{ loading ? '删除中...' : '确认删除' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>

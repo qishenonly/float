@@ -22,4 +22,5 @@ type UpdateAccountRequest struct {
 	IncludeInTotal *bool    `json:"include_in_total"`
 	DisplayOrder   *int     `json:"display_order"`
 	IsActive       *bool    `json:"is_active"`
+	Balance        *float64 `json:"balance"` // 允许直接修改余额（修正用）
 }

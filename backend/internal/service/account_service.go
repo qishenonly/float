@@ -135,9 +135,12 @@ func (s *accountService) UpdateAccount(userID int64, accountID int64, req *reque
 	if req.IsActive != nil {
 		account.IsActive = *req.IsActive
 	}
-	// 注意：余额通常不通过此接口直接修改，而是通过交易记录变动
-	// 但如果需要修正初始余额，可以在这里处理，同时需要考虑对当前余额的影响
-	// 简单起见，这里暂不处理余额修正逻辑，或者假设Update仅修改属性
+
+	// 如果请求中包含Balance，说明是用户手动修正余额
+	if req.Balance != nil {
+		account.Balance = *req.Balance
+		logger.Info(fmt.Sprintf("[Service][账户] 手动修正余额 | 用户ID: %d | 账户ID: %d | 新余额: %.2f", userID, accountID, *req.Balance))
+	}
 
 	return s.accountRepo.Update(account)
 }
