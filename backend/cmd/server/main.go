@@ -120,7 +120,7 @@ func main() {
 }
 
 func initConfig() error {
-	viper.SetConfigName("config")
+	viper.SetConfigName("config.dev")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./config")
 	viper.AddConfigPath(".")
