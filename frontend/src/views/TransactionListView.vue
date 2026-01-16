@@ -32,6 +32,9 @@ const editForm = ref({
 })
 const editLoading = ref(false)
 
+// 删除确认弹窗状态
+const showDeleteConfirm = ref(false)
+
 // 筛选状态
 const activeQuickFilter = ref('all') // 'all', 'month', 'expense', 'income', 'large'
 const searchKeyword = ref('')
@@ -345,11 +348,43 @@ const handleEditSave = async () => {
     }
   }
 
+  const newAmount = parseFloat(editForm.value.amount)
+  const oldAmount = editingTransaction.value.amount
+  const oldType = editingTransaction.value.type
+  const newType = editForm.value.type
+  const oldAccountId = editingTransaction.value.account_id || editingTransaction.value.account?.id
+  const newAccountId = editForm.value.accountId
+
+  // 余额检查：计算修改后账户余额是否会变为负数
+  if (newType === 'expense' || newType === 'transfer') {
+    const targetAccount = accounts.value.find(a => a.id === newAccountId)
+    if (targetAccount) {
+      let effectiveBalance = targetAccount.balance
+      
+      // 如果原来也是从同一个账户支出，先把原来的金额加回去
+      if (oldAccountId === newAccountId) {
+        if (oldType === 'expense') {
+          effectiveBalance += oldAmount
+        } else if (oldType === 'transfer') {
+          effectiveBalance += oldAmount
+        } else if (oldType === 'income') {
+          effectiveBalance -= oldAmount
+        }
+      }
+      
+      // 检查新的支出是否会超过余额
+      if (newAmount > effectiveBalance) {
+        showToast(`账户余额不足！当前可用余额: ¥${effectiveBalance.toFixed(2)}`, 'warning')
+        return
+      }
+    }
+  }
+
   editLoading.value = true
   try {
     const payload = {
       type: editForm.value.type,
-      amount: parseFloat(editForm.value.amount),
+      amount: newAmount,
       description: editForm.value.description,
       transaction_date: `${editForm.value.transactionDate}T00:00:00Z`,
       account_id: editForm.value.accountId
@@ -376,11 +411,16 @@ const handleEditSave = async () => {
   }
 }
 
-const handleDelete = async () => {
-  if (!confirm('确定要删除这笔交易吗？删除后账户余额将自动恢复。')) {
-    return
-  }
+const openDeleteConfirm = () => {
+  showDeleteConfirm.value = true
+}
 
+const closeDeleteConfirm = () => {
+  showDeleteConfirm.value = false
+}
+
+const handleDelete = async () => {
+  closeDeleteConfirm()
   editLoading.value = true
   try {
     await transactionAPI.deleteTransaction(editingTransaction.value.id)
@@ -828,7 +868,7 @@ const handleDelete = async () => {
       <!-- 操作按钮 -->
       <div class="flex gap-2 mt-4">
         <button 
-          @click="handleDelete"
+          @click="openDeleteConfirm"
           :disabled="editLoading"
           class="flex-1 bg-red-50 text-red-600 font-bold py-3 rounded-xl active:scale-[0.98] transition disabled:opacity-60 text-sm"
         >
@@ -842,6 +882,43 @@ const handleDelete = async () => {
         >
           {{ editLoading ? '保存中...' : '保存修改' }}
         </button>
+      </div>
+    </div>
+
+    <!-- 删除确认弹窗 -->
+    <div 
+      v-show="showDeleteConfirm"
+      @click="closeDeleteConfirm" 
+      class="drawer-overlay absolute inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-center justify-center"
+      :class="{ 'open': showDeleteConfirm }"
+    >
+      <div 
+        @click.stop
+        class="confirm-modal bg-white rounded-3xl p-6 mx-6 w-full max-w-sm shadow-2xl"
+        :class="{ 'open': showDeleteConfirm }"
+      >
+        <div class="flex flex-col items-center text-center">
+          <div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
+            <i class="fa-solid fa-trash-can text-2xl text-red-500"></i>
+          </div>
+          <h3 class="text-lg font-bold text-gray-800 mb-2">确认删除</h3>
+          <p class="text-sm text-gray-500 mb-6">确定要删除这笔交易吗？<br>删除后账户余额将自动恢复</p>
+          <div class="flex gap-3 w-full">
+            <button 
+              @click="closeDeleteConfirm"
+              class="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-xl active:scale-[0.98] transition text-sm"
+            >
+              取消
+            </button>
+            <button 
+              @click="handleDelete"
+              :disabled="editLoading"
+              class="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl active:scale-[0.98] transition text-sm disabled:opacity-60"
+            >
+              {{ editLoading ? '删除中...' : '确认删除' }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -889,6 +966,17 @@ const handleDelete = async () => {
 }
 .bottom-drawer.open { 
   transform: translateY(0); 
+}
+
+/* 确认弹窗动画 */
+.confirm-modal {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(0.9);
+  opacity: 0;
+}
+.confirm-modal.open {
+  transform: scale(1);
+  opacity: 1;
 }
 
 /* 进场动画 */

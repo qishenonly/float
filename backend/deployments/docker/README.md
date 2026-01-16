@@ -32,6 +32,8 @@ make docker-build
 
 # 或直接使用docker compose
 docker compose build
+
+make docker-build-tar VERSION=0.0.3
 ```
 
 ### 3. 启动服务

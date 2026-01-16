@@ -203,11 +203,30 @@ const handleSave = async () => {
     }
   }
 
+  const transactionAmount = parseFloat(amount.value);
+
+  // 余额检查：支出和转账时检查账户余额是否足够
+  if (type.value === "expense") {
+    const accountBalance = selectedAccount.value?.balance || 0;
+    if (transactionAmount > accountBalance) {
+      showToast(`账户余额不足！当前余额: ¥${accountBalance.toFixed(2)}`, "warning");
+      return;
+    }
+  }
+
+  if (type.value === "transfer") {
+    const fromAccountBalance = transferFrom.value?.balance || 0;
+    if (transactionAmount > fromAccountBalance) {
+      showToast(`转出账户余额不足！当前余额: ¥${fromAccountBalance.toFixed(2)}`, "warning");
+      return;
+    }
+  }
+
   loading.value = true;
   try {
     const payload = {
        type: type.value,
-       amount: parseFloat(amount.value),
+       amount: transactionAmount,
        currency: "CNY",
        title: type.value === "transfer" ? "转账" : selectedCategory.value.name,
        description: description.value,

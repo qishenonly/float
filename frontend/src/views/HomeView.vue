@@ -24,6 +24,21 @@ const statistics = ref({
 })
 const totalBalance = ref(0)
 
+// 余额隐藏状态，默认隐藏
+const isBalanceHidden = ref(true)
+
+// 从 localStorage 读取隐藏状态，如果没有存储过则默认隐藏
+onMounted(() => {
+  const savedHiddenState = localStorage.getItem('balanceHidden')
+  // 如果没有保存过状态，默认为隐藏（true）
+  isBalanceHidden.value = savedHiddenState === null ? true : savedHiddenState === 'true'
+})
+
+const toggleBalanceVisibility = () => {
+  isBalanceHidden.value = !isBalanceHidden.value
+  localStorage.setItem('balanceHidden', isBalanceHidden.value.toString())
+}
+
 // 获取今天的日期
 const getTodayDate = () => {
   const today = new Date()
@@ -75,6 +90,7 @@ const loadData = async () => {
 
 onMounted(() => {
   loadData()
+  // 余额隐藏状态已在上面的 onMounted 中处理
 })
 
 const formatAmount = (amount) => {
@@ -148,8 +164,10 @@ const openTransactionHistory = () => {
             <div>
               <p class="text-indigo-100 text-xs font-medium mb-1 tracking-wide opacity-80">账户总余额</p>
               <div class="flex items-baseline gap-2">
-                <h2 class="text-3xl font-bold tracking-tight">¥ {{ formatAmount(totalBalance) }}</h2>
-                <button class="text-indigo-200 hover:text-white transition active-press"><i class="fa-solid fa-eye-slash text-sm"></i></button>
+                <h2 class="text-3xl font-bold tracking-tight">{{ isBalanceHidden ? '¥ ****' : '¥ ' + formatAmount(totalBalance) }}</h2>
+                <button @click="toggleBalanceVisibility" class="text-indigo-200 hover:text-white transition active-press">
+                  <i class="fa-solid text-sm" :class="isBalanceHidden ? 'fa-eye' : 'fa-eye-slash'"></i>
+                </button>
               </div>
             </div>
             <div class="bg-white/20 backdrop-blur-md p-2 rounded-xl">

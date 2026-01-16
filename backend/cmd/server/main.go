@@ -120,7 +120,7 @@ func main() {
 }
 
 func initConfig() error {
-	viper.SetConfigName("config.dev")
+	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./config")
 	viper.AddConfigPath(".")
@@ -136,7 +136,7 @@ func initConfig() error {
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			logger.Warn("Config file not found, using defaults")
+			log.Println("Warning: Config file not found, using defaults")
 			return nil
 		}
 		return err
